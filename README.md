@@ -32,8 +32,8 @@ Each Silver Fabric Engine host needs to be `docker enabled` before it can be use
    
 After you have completed the steps noted above, restart Silver Fabric Engine Daemon so that it will register the host with Silver Fabric Broker as `Docker Enabled`. It is recommneded that you setup and enable systemd services for Silver Fabric Engine Daemon and Docker Daemon so both these servcies automatially startup when the host operating system is booted up.
 
-### Dokcer Containers Feature Support
---------------------------------------
+### Docker Container Feature Support
+---------------------------------------------------
 Docker containers provide two key capabilities:
 * Operating System level isolation above the kernel layer
 * Application level packaging
