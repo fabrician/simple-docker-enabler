@@ -116,7 +116,7 @@ Components using this enabler can configure following Enabler Runtime Context va
 |`REUSE_DOCKER_CONTAINER`|false|String|Reuse existing local Docker container if it exists|false|None|
 |`REMOVE_DOCKER_CONTAINER`|true|String|Remove Docker container on component shutdown|false|None|
 |`REMOVE_DOCKER_IMAGE`|false|String|Remove Docker image on component shutdown|false|None|
-|`TTP_STATIC_ROUTES`||String|space separated list: ContextUrl:http://${LISTEN_ADDRESS}:port|false|None|
+|`HTTP_STATIC_ROUTES`||String|space separated list: ContextUrl:http://${LISTEN_ADDRESS}:port|false|None|
 |`BIND_ON_ALL_LOCAL_ADDRESSES`|false|Environment|Specify if all network interfaces should be bounded for all public port access|false|None|
 |`LISTEN_ADDRESS_NET_MASK`||Environment|A comma delimited list of net masks in `CIDR` notation. The first IP address found that matches one of the net masks is used as the listen address. Note that BIND_ON_ALL_LOCAL_ADDRESSES overrides this setting.|false|None|
 
