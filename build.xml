@@ -1,0 +1,17 @@
+<project name="RabbitmQ Server Enabler" default="enabler" basedir=".">
+	<property name="grid-library.name" value="simple-docker-enabler" />
+	<property name="grid-library.version" value="1.9.0" />
+	<property name="dist" location="dist" />
+
+	<target name="enabler">
+		<mkdir dir="${dist}" />
+		<zip destfile="${dist}/${grid-library.name}-${grid-library.version}-gridlib.zip" basedir="gridlib" />
+	</target>
+
+	<target name="clean">
+		<delete>
+			<fileset dir="${dist}" erroronmissingdir="false" />
+		</delete>
+	</target>
+
+</project>

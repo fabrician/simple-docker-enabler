@@ -1,0 +1,438 @@
+<container class="com.datasynapse.fabric.container.ExecContainer"
+	name="SimpleDockerEnabler">
+	<import package="com.datasynapse.fabric.common" />
+	<import package="com.datasynapse.fabric.common.script" />
+	<import package="com.datasynapse.fabric.container" />
+	<import package="com.datasynapse.fabric.util" />
+	<import package="com.datasynapse.fabric.stats" />
+	<import package="com.datasynapse.fabric.stats.aggregator" />
+	<import package="com.datasynapse.fabric.stats.evaluator" />
+	<import package="com.datasynapse.fabric.stats.provider" />
+	<import package="com.datasynapse.fabric.domain" />
+
+	<property name="name" value="Simple Docker Enabler" />
+	<property name="version" value="1.9.0" />
+	<property name="description" value="Docker Enabler based on Docker CLI" />
+	<property name="distributionVersion" value="1.9.0" />
+	<property name="supportedDomainType" value="Default:5.5.2" />
+	<property name="supportedDomainType" value="J2EE:5.5.2" />
+	<property name="blocking" value="false" />
+	<property name="shutdownTimeout" value="120000" />
+	<property name="componentInstanceNumberingEnabled" value="True" />
+
+	<script class="Script">
+		<property name="languageVersion" value="2.5" />
+		<property name="name" value="SimpleDockerEnabler.py" />
+		<property name="language" value="python" />
+	</script>
+
+
+	<statisticsprovider class="ContainerScriptStatisticsProvider">
+		<supportedstatistic class="BasicStatisticsMetadata">
+			<property name="name" value="Docker CPU Usage %" />
+			<property name="description" value="Docker CPU usage percentage" />
+			<property name="shared" value="False" />
+			<property name="default" value="True" />
+			<property name="units" value="%" />
+			<aggregator class="AverageAggregator">
+				<property name="inputStatisticName" value="Docker CPU Usage %" />
+			</aggregator>
+		</supportedstatistic>
+
+		<supportedstatistic class="BasicStatisticsMetadata">
+			<property name="name" value="Docker Memory Usage %" />
+			<property name="description" value="Docker memory usage percentage" />
+			<property name="shared" value="False" />
+			<property name="default" value="True" />
+			<property name="units" value="%" />
+			<aggregator class="AverageAggregator">
+				<property name="inputStatisticName" value="Docker Memory Usage %" />
+			</aggregator>
+		</supportedstatistic>
+
+		<supportedstatistic class="BasicStatisticsMetadata">
+			<property name="name" value="Docker Memory Usage (MB)" />
+			<property name="description" value="Docker memory usage (MB)" />
+			<property name="shared" value="False" />
+			<property name="default" value="True" />
+			<property name="units" value="MB" />
+			<aggregator class="AverageAggregator">
+				<property name="inputStatisticName" value="Docker Memory Usage (MB)" />
+			</aggregator>
+		</supportedstatistic>
+
+		<supportedstatistic class="BasicStatisticsMetadata">
+			<property name="name" value="Docker Memory Limit (MB)" />
+			<property name="description" value="Docker Memory Limit (MB)" />
+			<property name="shared" value="False" />
+			<property name="default" value="True" />
+			<property name="units" value="MB" />
+			<aggregator class="AverageAggregator">
+				<property name="inputStatisticName" value="Docker Memory Limit (MB)" />
+			</aggregator>
+		</supportedstatistic>
+
+		<supportedstatistic class="BasicStatisticsMetadata">
+			<property name="name" value="Docker Network Input (MB)" />
+			<property name="description" value="Docker network input (MB)" />
+			<property name="shared" value="False" />
+			<property name="default" value="True" />
+			<property name="units" value="MB" />
+			<aggregator class="AverageAggregator">
+				<property name="inputStatisticName" value="Docker Network Input (MB)" />
+			</aggregator>
+		</supportedstatistic>
+
+		<supportedstatistic class="BasicStatisticsMetadata">
+			<property name="name" value="Docker Network Output (MB)" />
+			<property name="description" value="Docker network output (MB)" />
+			<property name="shared" value="False" />
+			<property name="default" value="True" />
+			<property name="units" value="MB" />
+			<aggregator class="AverageAggregator">
+				<property name="inputStatisticName" value="Docker Network Output (MB)" />
+			</aggregator>
+		</supportedstatistic>
+
+		<supportedstatistic class="BasicStatisticsMetadata">
+			<property name="name" value="Docker Block Output (MB)" />
+			<property name="description" value="Docker block device output (MB)" />
+			<property name="shared" value="False" />
+			<property name="default" value="True" />
+			<property name="units" value="MB" />
+			<aggregator class="AverageAggregator">
+				<property name="inputStatisticName" value="Docker Block Output (MB)" />
+			</aggregator>
+		</supportedstatistic>
+
+		<supportedstatistic class="BasicStatisticsMetadata">
+			<property name="name" value="Docker Block Input (MB)" />
+			<property name="description" value="Docker block device input (MB)" />
+			<property name="shared" value="False" />
+			<property name="default" value="True" />
+			<property name="units" value="MB" />
+			<aggregator class="AverageAggregator">
+				<property name="inputStatisticName" value="Docker Block Input (MB)" />
+			</aggregator>
+		</supportedstatistic>
+
+	</statisticsprovider>
+
+
+	<runtimecontexttemplate class="DefaultRuntimeContext">
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_CONTAINER_NAME" />
+			<property name="value" value="" />
+			<property name="type" value="String" />
+			<property name="autoIncrementType" value="None" />
+			<property name="description"
+				value="Leave this blank (recommended), if you want uqniue name to be auto-generated." />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_REGISTRY" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Docker registry for fetching image. For example, https://registryhost:5000/" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_IMAGE" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker image e.g centos:latest " />
+
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_CONTEXT" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Docker context path or URL used for building new image." />
+
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_COMMAND" />
+			<property name="value" value="" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Docker command executed in Docker container at startup" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_COMMAND_ARGS" />
+			<property name="value" value="" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker command args" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_CONTAINER_WORK_DIR" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker container work directory" />
+
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_CONTAINER_LOGS" />
+			<property name="value" value="${CONTAINER_WORK_DIR}/docker.logs" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker container logs file" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_CONTAINER_NETWORK_MODE" />
+			<property name="value" value="--net=bridge" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker container network mode" />
+		</variable>
+
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_EXTRA_RUN_OPTIONS" />
+			<property name="value" value="--detach=true" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Docker run options (--detach=false option is not supported)" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_PUBLISH_PORTS" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Docker publish ports --publish ${LISTEN_ADDRESS}:hostPort:containerPort" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_EXPOSE_PORTS" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker expose ports --expose port" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_MOUNT_VOLUMES" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Docker mount volumes  --volume hostdir:containerdir" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_ENV_VARIABLES" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Docker environment variables --env var=value" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DNS_SEARCH_DOMAINS" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="Environment" />
+			<property name="description" value="DNS search domains format: --dns-search=" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_EXTRA_BUILD_OPTIONS" />
+			<property name="value" value="--quiet=false --no-cache=true --rm=true" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker build options" />
+		</variable>
+
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_STOP_OPTIONS" />
+			<property name="value" value="--time=30" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker stop options" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_REMOVE_OPTIONS" />
+			<property name="value" value="--force=true  --volumes=true" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker remove container options" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_REMOVE_IMAGE_OPTIONS" />
+			<property name="value" value="--force=true" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker remove image options" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="USE_SUDO" />
+			<property name="value" value="false" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Run Docker with sudo. The sudo must not prompt
+				for password!" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="REUSE_DOCKER_IMAGE" />
+			<property name="value" value="true" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Reuse existing local Docker image if it exists." />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="REUSE_DOCKER_CONTAINER" />
+			<property name="value" value="false" />
+			<property name="type" value="String" />
+			<property name="description" value="Reuse Docker container if it exists" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="REMOVE_DOCKER_IMAGE" />
+			<property name="value" value="false" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Remove local Docker image on component shutdown" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="REMOVE_DOCKER_CONTAINER" />
+			<property name="value" value="true" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Remove Docker container on component shutdown" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="HTTP_STATIC_ROUTES" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="space separated list: ContextUrl:http://${LISTEN_ADDRESS}:port" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="START_POLL_PERIOD" />
+			<property name="value" value="10000" />
+			<property name="type" value="String" />
+			<property name="description" value="Start condition poll period" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="RUNNING_POLL_PERIOD" />
+			<property name="value" value="60000" />
+			<property name="type" value="String" />
+			<property name="description" value="Running condition poll period" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="LOCK_WAIT" />
+			<property name="value" value="120000" />
+			<property name="type" value="String" />
+			<property name="description" value="Build lock wait timeout (ms)" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="LOCK_EXPIRE" />
+			<property name="value" value="300000" />
+			<property name="type" value="String" />
+			<property name="description" value="Build lock expire timeout (ms)" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="BIND_ON_ALL_LOCAL_ADDRESSES" />
+			<property name="value" value="false" />
+			<property name="type" value="Environment" />
+			<property name="description"
+				value="Specify if all network interfaces should be bounded for all public port access. If true, bound to '0.0.0.0' address." />
+		</variable>
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="LISTEN_ADDRESS_NET_MASK" />
+			<property name="value" value="" />
+			<property name="type" value="Environment" />
+			<property name="description"
+				value="A comma delimited list of net masks in CIDR notation. The first IP address found that matches one of the net masks is used as the listenaddress. Note that BIND_ON_ALL_LOCAL_ADDRESSES overrides this setting." />
+		</variable>
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DELETE_RUNTIME_DIR_ON_SHUTDOWN" />
+			<property name="value" value="true" />
+			<property name="type" value="Environment" />
+			<property name="description"
+				value="Whether to delete the Docker runtime directory on shutdown. This includes removing the Docker container." />
+		</variable>
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="COMPONENT_INSTANCE_NUMBERING_ENABLED" />
+			<property name="value" value="true" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Allows distinct component instance numbers assignment and ensuring numbers are reused by delaying activations. When enabled, activations are skipped if a component with the same name as the one needing activation is currently deactivating or reactivating. Once all the components that were deactivating/reactivating are done any pending activations will be sent during the next allocation cycle." />
+		</variable>
+
+	</runtimecontexttemplate>
+
+	<unixcommand class="LifecycleCommand">
+		<property name="shutdownCommand" value="" />
+		<property name="startupCommand" value="" />
+	</unixcommand>
+
+	<windowscommand class="LifecycleCommand">
+		<property name="shutdownCommand" value="" />
+		<property name="startupCommand" value="" />
+	</windowscommand>
+
+	<supportedFeature class="Feature">
+		<property name="name" value="HTTP Support" />
+		<property name="description" value="Support for HTTP routing" />
+		<property name="infoClass"
+			value="com.datasynapse.fabric.domain.featureinfo.HttpFeatureInfo" />
+	</supportedFeature>
+
+	<supportedFeature class="Feature">
+		<property name="name" value="Application Logging Support" />
+		<property name="description"
+			value="Support for handling of custom application logs" />
+		<property name="infoDescription"
+			value="Specify how often checkpoint copies of application log files are made, and whether or not application logs are archived upon deactivation." />
+		<property name="infoClass"
+			value="com.datasynapse.fabric.domain.featureinfo.ApplicationLoggingInfo" />
+	</supportedFeature>
+
+	<supportedFeature class="Feature">
+		<property name="name" value="Component Notification Support" />
+		<property name="description" value="Support for Component Notifications" />
+		<property name="infoDescription"
+			value="Support for receiving notifications when other components of interest are going to be activated (during the current allocation cycle), currently activating, running, deactivated,  failed activating, failed deactivating or the engine running a component goes away" />
+		<property name="infoClass"
+			value="com.datasynapse.fabric.domain.featureinfo.ComponentNotificationFeatureInfo" />
+	</supportedFeature>
+
+	<supportedFeature class="Feature">
+		<property name="name" value="Archive Management Support" />
+		<property name="description"
+			value="Support for managing J2EE archives if Docker container represents a J2EE-platform" />
+		<property name="infoClass"
+			value="com.datasynapse.fabric.domain.featureinfo.ArchiveManagementFeatureInfo" />
+	</supportedFeature>
+
+</container>
