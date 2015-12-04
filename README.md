@@ -40,7 +40,7 @@ Docker containers provide two key capabilities:
 
 This Docker Enabler supports both these key Docker capabilities and it does not impose any significant restrictions on native Docker Container features. The only restriction this Enabler imposes is that the Docker Containers managed by this Enabler are always run in `detached` mode.
 
-### Docker container instantiation limits
+### Docker Container Instantiation Limits
 ------------------------------------------
 Each Silver Fabric Engine docker enabled host can run Docker containers up to the number of Silver Fabric Engine instances available on the host. Running multiple Docker Containers on a single docker enabled host will eventually bump into CPU and memory limits on the host. The number of Silver Fabric Engine instances configured on a docker enabled host should reflect the CPU and memory resources available on the docker enabled host.
 
@@ -51,11 +51,11 @@ Since not all Silver Fabric Engine hosts managed by a single Silver Fabric Broke
 
 ### Pulling Docker Images from a Docker Registry
 -------------------------------------------------
-Silver Fabric Components using this Enabler must define `DOCKER_IMAGE` runtime context variable. If the value of the `DOCKER_IMAGE` variable points to a Docker `repository:tag` image, the relevant image is pulled down to the docker enabled host. This assumes there is appropriate network and security configuration in place on the docker enabbled host such that the image can be pulled down from the specified Docker registry given by the value of the runtime variable `DOCKER_REGISTRY`. If no Docker registry is specified, default Docker Hub registry is used by the Enabler.
+Silver Fabric Components using this Enabler must define `DOCKER_IMAGE` runtime context variable. If the value of the `DOCKER_IMAGE` variable points to a Docker `repository:tag` image, the relevant image is pulled down to the docker enabled host. This assumes there is appropriate network and security configuration in place on the docker enabled host such that the image can be pulled down from the specified Docker registry given by the value of the runtime variable `DOCKER_REGISTRY`. If no Docker registry is specified, default Docker Hub registry is used by the Enabler.
 
 ### Building Docker Images
 ------------------------------
-If the specified `DOCKER_IMAGE` runtime context variable points to an image that does not exist in the specifired Docker registry, and if `DOCKER_CONTEXT` variable points to a folder containing a `Dockerfile` and other optional docker context files, a new Docker image is built locally on the docker enabled host and tagged with the value specified in the `DOCKER_IMAGE` variable.
+If the specified `DOCKER_IMAGE` runtime context variable points to an image that does not exist in the specified Docker registry, and if `DOCKER_CONTEXT` variable points to a folder containing a `Dockerfile` and other optional docker context files, a new Docker image is built locally on the docker enabled host and is tagged with the value specified in the `DOCKER_IMAGE` variable.
 
 ### Silver Fabric Enabler Features
 ----------------------------------
@@ -84,15 +84,15 @@ Components using this Enabler can track following Docker container statistics:
 
 ### Docker Container Logs
 -----------------------------
-Docker Container logs are periodically retrieved and written to the file path specified by the runtime context variable `DOCKER_CONTAINER_LOGS`. 
+Docker Container logs are periodically retrieved and written to the file path specified by the Runtime Context variable `DOCKER_CONTAINER_LOGS`. 
 
 ### Silver Fabric Runtime Context Variables
 ------------------------------
 Components using this enabler can configure following Enabler Runtime Context variables:
 
-|Variable Name|Default value|Type|Description|Export|Auto Increment|
+|Variable Name|Default Value|Type|Description|Export|Auto Increment|
 |---|---|---|---|---|---|
-|`DOCKER_CONTAINER_NAME`||String|Leave this blank (recommended), if you want uqniue name to be auto-generated|false|None|
+|`DOCKER_CONTAINER_NAME`||String|Leave this blank (recommended), if you want unique name to be auto-generated|false|None|
 |`DOCKER_REGISTRY`||String|Docker registry for fetching image. For example, https://registryhost:5000/|false|None|
 |`DOCKER_IMAGE`||String|Docker registry for fetching image. For example, Docker image e.g centos:latests|false|None|
 |`DOCKER_CONTEXT`||String|Docker context path or URL used for building new image|false|None|
@@ -124,7 +124,7 @@ Components using this enabler can configure following Enabler Runtime Context va
 
 To link Docker Containers, one can use the native Docker linking mechanism with the understanding that all the linked containers must be restricted to run in the same docker enabled host using Silver Fabric [Resource Preference rule]. Alternatively, Silver Fabric exported Runtime Variables can be defined to export settings from one Docker Container to other Silver Fabric dependent Docker Containers.
 
-It is expected in future as Docker `Swarm` matures, this Enabler will evolve to support native linking across multiple docker enabled hosts that are part of a Sawrm.
+It is expected in future as Docker `Swarm` matures, this Enabler will evolve to support native linking across multiple docker enabled hosts that are part of a Swarm.
 
 ### Component Examples
 ------------------------
