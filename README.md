@@ -112,7 +112,7 @@ Components using this enabler can configure following Enabler Runtime Context va
 |`DOCKER_REMOVE_OPTIONS`|--force=true --volumes=true|String|Docker remove container options|false|None|
 |`DOCKER_REMOVE_IMAGE_OPTIONS`|--force=true|String|Docker remove image options|false|None|
 |`USE_SUDO`|false|String|Run Docker with sudo. The sudo must not prompt for password!|false|None|
-|`EUSE_DOCKER_IMAGE`|true|String|Reuse existing local Docker image if it exists|false|None|
+|`REUSE_DOCKER_IMAGE`|true|String|Reuse existing local Docker image if it exists|false|None|
 |`REUSE_DOCKER_CONTAINER`|false|String|Reuse existing local Docker container if it exists|false|None|
 |`REMOVE_DOCKER_CONTAINER`|true|String|Remove Docker container on component shutdown|false|None|
 |`TTP_STATIC_ROUTES`||String|space separated list: ContextUrl:http://${LISTEN_ADDRESS}:port|false|None|
