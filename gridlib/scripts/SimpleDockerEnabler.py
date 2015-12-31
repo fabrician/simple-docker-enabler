@@ -6,6 +6,9 @@ import re
 from subprocess import call
 
 from java.lang import Boolean
+from java.util import Properties
+from java.io import File
+from java.io import FileReader
 
 from com.datasynapse.fabric.util import ContainerUtils
 from com.datasynapse.fabric.common import RuntimeContextVariable
@@ -19,7 +22,17 @@ class Docker:
         
         if not self.__dockerImage:
             raise "DOCKER_IMAGE must be specified"
-   
+        
+        imageDetails = self.__dockerImage.split(":")
+        if len(imageDetails) > 1:
+            self.__dockerImage = imageDetails[0]
+            self.__dockerImageTag = imageDetails[1]
+        else:
+            self.__dockerImageTag = getVariableValue("DOCKER_IMAGE_TAG") 
+            
+        if not self.__dockerImageTag:
+            self.__dockerImageTag = "latest"
+        
         self.__dockerContext = getVariableValue("DOCKER_CONTEXT")
         self.__dockerRegistry = getVariableValue("DOCKER_REGISTRY")
 
@@ -32,8 +45,8 @@ class Docker:
             
         self.__dockerContainerName = re.sub("\s+", "", self.__dockerContainerName)
         activationInfo = proxy.container.getActivationInfo()
-        instance = activationInfo.getProperty(ActivationInfo.COMPONENT_INSTANCE)
-        self.__dockerContainerName = "sf-"+self.__dockerContainerName + "-"+ instance
+        componentInstance = activationInfo.getProperty(ActivationInfo.COMPONENT_INSTANCE)
+        self.__dockerContainerName = "sf-"+self.__dockerContainerName + "-"+ componentInstance
         logger.info("Docker container name:" + self.__dockerContainerName)
         
         self.__basedir = getVariableValue("CONTAINER_WORK_DIR")
@@ -54,7 +67,32 @@ class Docker:
         self.__dockerStats = {}
         
         self.__buildLock = "docker-build:"+getVariableValue("LISTEN_ADDRESS")
-
+        self. __getEc2PrivateIpv4s(additionalVariables)
+     
+    def __getEc2PrivateIpv4s(self, additionalVariables):
+        try:
+            dir = File(self.__basedir)
+            dir = dir.getParentFile().getParentFile().getParentFile()
+            fileReader = FileReader(File(dir, "engine-session.properties" ))
+            props = Properties()
+            props.load(fileReader)
+            ec2PrivateIpv4s = props.getProperty("ec2PrivateIpv4s")
+            if ec2PrivateIpv4s:
+                ipList = ec2PrivateIpv4s.split()
+                logger.info("Ec2 Private IPv4s:" + list2str(ipList))
+                engineInstance = getVariableValue("ENGINE_INSTANCE")
+                engineInstance = int(engineInstance)
+                if len(ipList) > engineInstance:
+                    dockerHostIp = ipList[engineInstance]
+                    logger.info("Setting DOCKER_HOST_IP:" +dockerHostIp)
+                    additionalVariables.add(RuntimeContextVariable("DOCKER_HOST_IP", dockerHostIp, RuntimeContextVariable.STRING_TYPE, "Docker Host IP", False, RuntimeContextVariable.NO_INCREMENT))
+                else:
+                    listenAddress = getVariableValue("LISTEN_ADDRESS")
+                    additionalVariables.add(RuntimeContextVariable("DOCKER_HOST_IP", listenAddress, RuntimeContextVariable.STRING_TYPE, "Docker Host IP", False, RuntimeContextVariable.NO_INCREMENT))
+        except:
+            type, value, traceback = sys.exc_info()
+            logger.info("read engine session properties error:" + `value`)
+            
     def __lock(self):
         "get build lock"
         logger.info("Acquire build lock:" + self.__buildLock)
@@ -67,14 +105,19 @@ class Docker:
         logger.info("Release build lock:" + self.__buildLock)
         if self.__locked:
             ContainerUtils.releaseGlobalLock(self.__buildLock)
-            
+    
     def __imageExists(self):
         imageExists = False
         file = None
         try:
             path = os.path.join(self.__basedir , "docker.images")
             file = open(path, "w")
-            cmdList = ["docker", "images", self.__dockerImage]
+            image = self.__dockerImage +":" + self.__dockerImageTag
+            
+            if self.__dockerRegistry:
+                image = "*/"+ image
+                
+            cmdList = ["docker", "images", image]
       
             if self.__sudo:
                 cmdList.insert(0, "sudo")
@@ -85,15 +128,19 @@ class Docker:
             
             file.flush()
             file.close()
+            
+            image = self.__dockerImage
+            if self.__dockerRegistry:
+                image = self.__dockerRegistry +"/" + image
+                        
             file = open(path, "r")
             lines = file.readlines()
             for line in lines:
                 row = line.split()
-                logger.info("Checking image:" + list2str(row))
                 if row:
-                    image = self.__dockerImage.split(':')
-                    if row[0] == image[0] and ((len(image) == 1) or (image[1] == row[1]) ):
-                        logger.info("Image exists:" + self.__dockerImage)
+                    logger.info("Checking cached images:" + list2str(row))
+                    if row[0] == image and self.__dockerImageTag == row[1]:
+                        logger.info("Cached image matches:" + row[0] +":"+ row[1])
                         imageExists = True
                         break
         finally:
@@ -125,12 +172,15 @@ class Docker:
                 row = line.split()
                 logger.info("Checking container:" + list2str(row))
                 if row and row[-1].strip() == self.__dockerContainerName:
-                    if self.__dockerImage.find(row[1]) == 0:
-                        logger.info("Container exists:" + self.__dockerContainerName)
+                    image = self.__dockerImage + ":" + self.__dockerImageTag
+                    if self.__dockerRegistry:
+                        image = self.__dockerRegistry + "/" + image
+                    if image.find(row[1]) == 0:
+                        logger.info("Container exists with matching image:" + self.__dockerContainerName + " " + image)
                         containerExists = True
                         break
                     else:
-                        logger.info("Container exists but image mismatch:" + self.__dockerContainerName +" " + self.__dockerImage)
+                        logger.info("No container found with matching image:" + self.__dockerContainerName +" " + image)
         finally:
             if file:
                 file.close()
@@ -179,7 +229,12 @@ class Docker:
         "pull image from repository"
         self.__lock()
         try:
-            cmdList = ["docker", "pull", self.__dockerRegistry + self.__dockerImage]
+            image = self.__dockerImage + ":"+ self.__dockerImageTag
+            
+            if self.__dockerRegistry:
+                image = self.__dockerRegistry + "/"  + image
+            
+            cmdList = ["docker", "pull", image]
       
             if self.__sudo:
                 cmdList.insert(0, "sudo")
@@ -238,8 +293,12 @@ class Docker:
                 options.append("--detach=true")
                 
             cmdList = cmdList + options
-            
-        cmdList.append(self.__dockerImage)
+        
+        image = self.__dockerImage + ":"+ self.__dockerImageTag
+        if self.__dockerRegistry:
+            image = self.__dockerRegistry +"/" + image
+        
+        cmdList.append(image)
     
         command = getVariableValue("DOCKER_COMMAND")
         if command:
@@ -340,7 +399,11 @@ class Docker:
             options = options.split()
             cmdList = cmdList + options
         
-        cmdList.append(self.__dockerImage)
+        image = self.__dockerImage + ":"+ self.__dockerImageTag
+        if self.__dockerRegistry:
+            image = self.__dockerRegistry + "/" + image
+            
+        cmdList.append(image)
         
         if self.__sudo:
             cmdList.insert(0, "sudo")

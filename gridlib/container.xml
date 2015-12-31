@@ -136,7 +136,7 @@
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
 			<property name="description"
-				value="Docker registry for fetching image. For example, https://registryhost:5000/" />
+				value="Docker registry for fetching image. For example, registryhost:5000" />
 		</variable>
 
 		<variable class="RuntimeContextVariable">
@@ -144,8 +144,15 @@
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
-			<property name="description" value="Docker image e.g centos:latest " />
-
+			<property name="description" value="Docker image repository e.g centos" />
+		</variable>
+		
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_IMAGE_TAG" />
+			<property name="value" value="latest" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker image repository tag e.g latest" />
 		</variable>
 
 		<variable class="RuntimeContextVariable">
