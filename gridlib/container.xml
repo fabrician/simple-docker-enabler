@@ -191,7 +191,7 @@
 
 		<variable class="RuntimeContextVariable">
 			<property name="name" value="DOCKER_CONTAINER_LOGS" />
-			<property name="value" value="${CONTAINER_WORK_DIR}/docker.logs" />
+			<property name="value" value="${CONTAINER_WORK_DIR}/docker.log" />
 			<property name="type" value="String" />
 			<property name="description" value="Docker container logs file" />
 		</variable>
@@ -246,14 +246,22 @@
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
 			<property name="description"
-				value="Docker environment variables --env var=value" />
+				value="Docker String variables --env var=value" />
 		</variable>
 
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_LINK" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker link" />
+		</variable>
+		
 		<variable class="RuntimeContextVariable">
 			<property name="name" value="DNS_SEARCH_DOMAINS" />
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
-			<property name="type" value="Environment" />
+			<property name="type" value="String" />
 			<property name="description" value="DNS search domains format: --dns-search=" />
 		</variable>
 

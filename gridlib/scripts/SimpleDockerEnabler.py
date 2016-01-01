@@ -18,48 +18,80 @@ class Docker:
     def __init__(self, additionalVariables):
         " initialize Docker"
         
-        self.__dockerImage = getVariableValue("DOCKER_IMAGE")
-        
-        if not self.__dockerImage:
+        images = getVariableValue("DOCKER_IMAGE")
+        if not images:
             raise "DOCKER_IMAGE must be specified"
+        imageList = images.split(",")
         
-        imageDetails = self.__dockerImage.split(":")
-        if len(imageDetails) > 1:
-            self.__dockerImage = imageDetails[0]
-            self.__dockerImageTag = imageDetails[1]
-        else:
-            self.__dockerImageTag = getVariableValue("DOCKER_IMAGE_TAG") 
-            
-        if not self.__dockerImageTag:
-            self.__dockerImageTag = "latest"
+        tagsList = None
+        tags = getVariableValue("DOCKER_IMAGE_TAG") 
+        if tags:
+            tagList = tags.split(",")
         
-        self.__dockerContext = getVariableValue("DOCKER_CONTEXT")
-        self.__dockerRegistry = getVariableValue("DOCKER_REGISTRY")
+        self.__dockerImage = []
+        self.__dockerImageTag = []
+        
+        for index, item in enumerate(imageList):
+            item = item.strip()
+            imageDetails = item.split(":")
+            if len(imageDetails) > 1:
+                self.__dockerImage.append(imageDetails[0])
+                self.__dockerImageTag.append(imageDetails[1])
+            else:
+                self.__dockerImage.append(item)
+                if listItem(tagList, index):
+                    self.__dockerImageTag.append(tagList[index])
+                else:
+                    self.__dockerImageTag.append("latest")
+        
+        
+        self.__dockerContext  = None
+        dockerContext = getVariableValue("DOCKER_CONTEXT")
+        if dockerContext:
+            self.__dockerContext = dockerContext.split(",")
+        
+        self.__dockerRegistry =  None
+        dockerRegistry = getVariableValue("DOCKER_REGISTRY")
+        if dockerRegistry:
+            self.__dockerRegistry = dockerRegistry.split()
 
-        self.__dockerContainerName = getVariableValue("DOCKER_CONTAINER_NAME")
-        
-        if not self.__dockerContainerName:
-            compName = proxy.container.getCurrentDomain().getName()
-            logger.info("Using component name to derive Docker container name:" + compName)
-            self.__dockerContainerName = compName
-            
-        self.__dockerContainerName = re.sub("\s+", "", self.__dockerContainerName)
         activationInfo = proxy.container.getActivationInfo()
         componentInstance = activationInfo.getProperty(ActivationInfo.COMPONENT_INSTANCE)
-        self.__dockerContainerName = "sf-"+self.__dockerContainerName + "-"+ componentInstance
-        logger.info("Docker container name:" + self.__dockerContainerName)
+        self.__compName = proxy.container.getCurrentDomain().getName()
+        self.__compName = re.sub("[\s]+", "", self.__compName)
+        
+        self.__dockerContainerName = []
+        containerName = getVariableValue("DOCKER_CONTAINER_NAME")
+        if containerName:
+            self.__dockerContainerName = containerName.split(",")
         
         self.__basedir = getVariableValue("CONTAINER_WORK_DIR")
-        self.__cidfile = os.path.join(self.__basedir , self.__dockerContainerName + ".cid")
-        self.__inspect = os.path.join(self.__basedir , self.__dockerContainerName + ".inspect")
-        self.__stats = os.path.join(self.__basedir , self.__dockerContainerName + ".stats")
+        self.__cidfile = []
+        self.__inspect  = []
+        self.__stats = []
+        self.__running = []
+        
+        self.__dockerLog = getVariableValue("DOCKER_CONTAINER_LOGS")
+        if not self.__dockerLog:
+            self.__dockerLog = os.path.join(self.__basedir , "docker.log")
+       
+        for index, item in enumerate(self.__dockerImage):
+            if not listItem(self.__dockerContainerName, index):
+                dcname = self.__compName  +"-"+ item + "-"+ componentInstance
+                dcname = re.sub("[\./]+", "_", dcname)
+                if not (index < len(self.__dockerContainerName)):
+                    self.__dockerContainerName.append(dcname)
+                else:
+                     self.__dockerContainerName[index] = dcname
+            logger.info("Docker container name:" + self.__dockerContainerName[index])
+            self.__cidfile.append(os.path.join(self.__basedir , self.__dockerContainerName[index] + ".cid"))
+            self.__inspect.append(os.path.join(self.__basedir , self.__dockerContainerName[index] + ".inspect"))
+            self.__stats.append(os.path.join(self.__basedir , self.__dockerContainerName[index] + ".stats"))
+            self.__running.append(False)
+            
         self.__sudo = Boolean.parseBoolean(getVariableValue("USE_SUDO", "false"))
         
-        self.__dockerlogs = getVariableValue("DOCKER_CONTAINER_LOGS")
-        
         self.__runningRegex = re.compile("\"Running\":\s*true")
-        self.__running = False
-        self.__inspectInfo = None
         
         self.__lockExpire = int(getVariableValue("LOCK_EXPIRE", "300000"))
         self.__lockWait = int(getVariableValue("LOCK_WAIT", "30000"))
@@ -68,7 +100,58 @@ class Docker:
         
         self.__buildLock = "docker-build:"+getVariableValue("LISTEN_ADDRESS")
         self. __getEc2PrivateIpv4s(additionalVariables)
-     
+    
+    def __initOptions(self):
+        self.__buildOptions = None
+        buildOptions = getVariableValue("DOCKER_EXTRA_BUILD_OPTIONS")
+        if buildOptions:
+            self.__buildOptions = buildOptions.split(",")
+            
+        self.__networkMode = None
+        networkMode = getVariableValue("DOCKER_CONTAINER_NETWORK_MODE")
+        if networkMode:
+            self.__networkMode = networkMode.split(",")
+            
+        self.__exposePorts = None
+        exposePorts = getVariableValue("DOCKER_EXPOSE_PORTS")
+        if exposePorts:
+            self.__exposePorts = exposePorts.split(",")
+            
+        self.__publishPorts = None
+        publishPorts = getVariableValue("DOCKER_PUBLISH_PORTS")
+        if publishPorts:
+            self.__publishPorts = publishPorts.split(",")
+            
+        self.__mountVolumes = None
+        mountVolumes = getVariableValue("DOCKER_MOUNT_VOLUMES")
+        if mountVolumes:
+            self.__mountVolumes = mountVolumes.split(",")
+            
+        self.__envVars = None
+        envVars = getVariableValue("DOCKER_ENV_VARIABLES")
+        if envVars:
+            self.__envVars = envVars.split(",")
+            
+        self.__dnsSearch = None
+        dnsSearch = getVariableValue("DNS_SEARCH_DOMAINS")
+        if dnsSearch:
+            self.__dnsSearch = dnsSearch.split(",")
+            
+        self.__workDir = None
+        workDir = getVariableValue("DOCKER_CONTAINER_WORK_DIR")
+        if workDir:
+            self.__workDir = workDir.split(",")
+        
+        self.__link= None
+        link = getVariableValue("DOCKER_LINK")
+        if link:
+            self.__link = link.split(",")
+            
+        self.__runOptions = None
+        runOptions = getVariableValue("DOCKER_EXTRA_RUN_OPTIONS")
+        if runOptions:
+            self.__runOptions = runOptions.split(",")
+            
     def __getEc2PrivateIpv4s(self, additionalVariables):
         try:
             dir = File(self.__basedir)
@@ -91,7 +174,7 @@ class Docker:
                     additionalVariables.add(RuntimeContextVariable("DOCKER_HOST_IP", listenAddress, RuntimeContextVariable.STRING_TYPE, "Docker Host IP", False, RuntimeContextVariable.NO_INCREMENT))
         except:
             type, value, traceback = sys.exc_info()
-            logger.info("read engine session properties error:" + `value`)
+            logger.warning("read engine session properties error:" + `value`)
             
     def __lock(self):
         "get build lock"
@@ -106,15 +189,16 @@ class Docker:
         if self.__locked:
             ContainerUtils.releaseGlobalLock(self.__buildLock)
     
-    def __imageExists(self):
+    def __imageExists(self, index):
         imageExists = False
         file = None
         try:
             path = os.path.join(self.__basedir , "docker.images")
             file = open(path, "w")
-            image = self.__dockerImage +":" + self.__dockerImageTag
+            image = self.__dockerImage[index] +":" + self.__dockerImageTag[index]
             
-            if self.__dockerRegistry:
+            registry = listItem(self.__dockerRegistry, index, True)
+            if registry:
                 image = "*/"+ image
                 
             cmdList = ["docker", "images", image]
@@ -129,9 +213,9 @@ class Docker:
             file.flush()
             file.close()
             
-            image = self.__dockerImage
-            if self.__dockerRegistry:
-                image = self.__dockerRegistry +"/" + image
+            image = self.__dockerImage[index]
+            if registry:
+                image = registry +"/" + image
                         
             file = open(path, "r")
             lines = file.readlines()
@@ -139,7 +223,7 @@ class Docker:
                 row = line.split()
                 if row:
                     logger.info("Checking cached images:" + list2str(row))
-                    if row[0] == image and self.__dockerImageTag == row[1]:
+                    if row[0] == image and self.__dockerImageTag[index] == row[1]:
                         logger.info("Cached image matches:" + row[0] +":"+ row[1])
                         imageExists = True
                         break
@@ -149,13 +233,13 @@ class Docker:
             
         return imageExists
 
-    def __containerExists(self):
+    def __containerExists(self, index):
         containerExists = False
         file = None
         try:
             path = os.path.join(self.__basedir , "docker.ps")
             file = open(path, "w")
-            cmdList = ["docker", "ps", "--filter", "name=" + self.__dockerContainerName]
+            cmdList = ["docker", "ps", "--filter", "name=" + self.__dockerContainerName[index]]
       
             if self.__sudo:
                 cmdList.insert(0, "sudo")
@@ -171,36 +255,37 @@ class Docker:
             for line in lines:
                 row = line.split()
                 logger.info("Checking container:" + list2str(row))
-                if row and row[-1].strip() == self.__dockerContainerName:
-                    image = self.__dockerImage + ":" + self.__dockerImageTag
-                    if self.__dockerRegistry:
-                        image = self.__dockerRegistry + "/" + image
+                if row and row[-1].strip() == self.__dockerContainerName[index]:
+                    image = self.__dockerImage[index] + ":" + self.__dockerImageTag[index]
+                    registry = listItem(self.__dockerRegistry, index, True)
+                    if registry:
+                        image = registry + "/" + image
                     if image.find(row[1]) == 0:
-                        logger.info("Container exists with matching image:" + self.__dockerContainerName + " " + image)
+                        logger.info("Container exists with matching image:" + self.__dockerContainerName[index] + " " + image)
                         containerExists = True
                         break
                     else:
-                        logger.info("No container found with matching image:" + self.__dockerContainerName +" " + image)
+                        logger.info("No container found with matching image:" + self.__dockerContainerName[index] +" " + image)
         finally:
             if file:
                 file.close()
             
         return containerExists
     
-    def __build(self):
+    def __build(self, index):
         "build image"
         
         self.__lock()
         try:
-            self.__rm()
-            self.__rmi()
+            self.__rm(index)
+            self.__rmi(index)
         
-            cmdList = ["docker", "build", "-t", self.__dockerImage]
-            options = getVariableValue("DOCKER_EXTRA_BUILD_OPTIONS")
+            cmdList = ["docker", "build", "-t", self.__dockerImage[index]]
+            options = listItem(self.__buildOptions, index, True)
             if options:
                 cmdList = cmdList + options.split()
         
-            cmdList.append(self.__dockerContext)
+            cmdList.append(self.__dockerContext[index])
     
             if self.__sudo:
                 cmdList.insert(0, "sudo")
@@ -211,10 +296,10 @@ class Docker:
         finally:
             self.__unlock()
             
-    def __start(self):
+    def __start(self, index):
         "start stopped container"
         
-        cmdList = ["docker", "start", self.__dockerContainerName]
+        cmdList = ["docker", "start", self.__dockerContainerName[index]]
       
         if self.__sudo:
             cmdList.insert(0, "sudo")
@@ -225,14 +310,15 @@ class Docker:
         if retcode != 0:
             raise "Error return code while starting docker container"
 
-    def __pull(self):
+    def __pull(self, index):
         "pull image from repository"
         self.__lock()
         try:
-            image = self.__dockerImage + ":"+ self.__dockerImageTag
+            image = self.__dockerImage[index] + ":"+ self.__dockerImageTag[index]
             
-            if self.__dockerRegistry:
-                image = self.__dockerRegistry + "/"  + image
+            registry = listItem(self.__dockerRegistry, index, True)
+            if registry:
+                image = registry + "/"  + image
             
             cmdList = ["docker", "pull", image]
       
@@ -245,44 +331,48 @@ class Docker:
         finally:
             self.__unlock()
         
-    def __run(self):
+    def __run(self, index):
         "run docker container"
         
         logger.info("Enter __run")
         cmdList = ["docker", "run"]
         
-        network = getVariableValue("DOCKER_CONTAINER_NETWORK_MODE")
+        network = listItem(self.__networkMode, index, True)
         if network:
             cmdList.append(network)
         
-        expose = getVariableValue("DOCKER_EXPOSE_PORTS")
+        expose = listItem(self.__exposePorts, index)
         if expose:
             cmdList = cmdList + expose.split()
             
-        publish = getVariableValue("DOCKER_PUBLISH_PORTS")
+        publish = listItem(self.__publishPorts, index)
         if publish:
             cmdList = cmdList + publish.split()
             
-        volumes = getVariableValue("DOCKER_MOUNT_VOLUMES")
+        volumes = listItem(self.__mountVolumes, index)
         if volumes:
             cmdList = cmdList + volumes.split()
             
-        envs = getVariableValue("DOCKER_ENV_VARIABLES")
+        envs = listItem(self.__envVars, index)
         if envs:
             cmdList = cmdList + envs.split()
             
-        dns = getVariableValue("DNS_SEARCH_DOMAINS")
+        dns = listItem(self.__dnsSearch, index)
         if dns:
             cmdList = cmdList + dns.split()
+        
+        link = listItem(self.__link, index)
+        if link:
+            cmdList = cmdList + link.split()
             
-        work = getVariableValue("DOCKER_CONTAINER_WORK_DIR")
+        work = listItem(self.__workDir, index)
         if work:
             cmdList.append("--workdir=" + work)
             
-        cmdList.append("--name=" + self.__dockerContainerName)
-        cmdList.append("--cidfile=" + self.__cidfile)
+        cmdList.append("--name=" + self.__dockerContainerName[index])
+        cmdList.append("--cidfile=" + self.__cidfile[index])
         
-        options = getVariableValue("DOCKER_EXTRA_RUN_OPTIONS")
+        options = listItem(self.__runOptions, index, True)
         if options:
             options = options.split()
             
@@ -294,9 +384,10 @@ class Docker:
                 
             cmdList = cmdList + options
         
-        image = self.__dockerImage + ":"+ self.__dockerImageTag
-        if self.__dockerRegistry:
-            image = self.__dockerRegistry +"/" + image
+        image = self.__dockerImage[index] + ":"+ self.__dockerImageTag[index]
+        registry = listItem(self.__dockerRegistry, index, True)
+        if registry:
+            image = registry +"/" + image
         
         cmdList.append(image)
     
@@ -316,14 +407,14 @@ class Docker:
         logger.info("Run Docker container:" + list2str(cmdList))
         retcode = call(cmdList)
         logger.info("Run Docker container return code:" + `retcode`)
-        self.__logs()
+        self.__logs(index)
         
         if retcode != 0:
             raise "Error return code while running docker container"
             
         logger.info("Exit __run")
         
-    def __stop(self):
+    def __stop(self, index):
         "stop docker container"
         
         logger.info("Enter __stop")
@@ -334,7 +425,7 @@ class Docker:
             options = options.split()
             cmdList = cmdList + options
         
-        cmdList.append(self.__dockerContainerName)
+        cmdList.append(self.__dockerContainerName[index])
         
         if self.__sudo:
             cmdList.insert(0, "sudo")
@@ -345,29 +436,35 @@ class Docker:
         
         logger.info("Exit __stop")
         
-    def __logs(self):
+    def __logs(self, index):
         "docker container logs"
         file = None
         
         try:
-            path = self.__dockerlogs
-            if not path:
-                path = os.path.join(self.__basedir , "docker.logs")
-            file = open(path, "w")
-            cmdList = ["docker", "logs", self.__dockerContainerName]
+            path = self.__dockerLog
+            if index == 0:
+                file = open(path, "w")
+            else:
+                file = open(path, "a")
+            
+            file.write("\nBEGIN Container log:" + self.__dockerContainerName[index] +"\n")
+            cmdList = ["docker", "logs", self.__dockerContainerName[index]]
        
             if self.__sudo:
                 cmdList.insert(0, "sudo")
         
-            call(cmdList, stdout=file, stderr=file)
+            logger.fine("Write Docker container logs:" + list2str(cmdList))
+            retcode = call(cmdList, stdout=file, stderr=file)
+            logger.fine("Write Docker container logs return code:" + `retcode`)
+            file.write("\nEND Container log:" + self.__dockerContainerName[index] +"\n")
         except:
             type, value, traceback = sys.exc_info()
-            logger.info("docker logs error:" + `value`)
+            logger.warning("docker logs error:" + `value`)
         finally:
             if file:
                 file.close()
         
-    def __rm(self):
+    def __rm(self, index):
         "remove docker container"
         
         logger.info("Enter __rm")
@@ -378,7 +475,7 @@ class Docker:
             options = options.split()
             cmdList = cmdList + options
         
-        cmdList.append(self.__dockerContainerName)
+        cmdList.append(self.__dockerContainerName[index])
         
         if self.__sudo:
             cmdList.insert(0, "sudo")
@@ -388,7 +485,7 @@ class Docker:
         logger.info("Remove Docker container return code:" + `retcode`)
         logger.info("Exit __rm")
         
-    def __rmi(self):
+    def __rmi(self, index):
         "remove docker image"
         
         logger.info("Enter __rmi")
@@ -399,9 +496,10 @@ class Docker:
             options = options.split()
             cmdList = cmdList + options
         
-        image = self.__dockerImage + ":"+ self.__dockerImageTag
-        if self.__dockerRegistry:
-            image = self.__dockerRegistry + "/" + image
+        image = self.__dockerImage[index] + ":"+ self.__dockerImageTag[index]
+        registry = listItem(self.__dockerRegistry, index, True)
+        if registry:
+            image = registry + "/" + image
             
         cmdList.append(image)
         
@@ -418,20 +516,22 @@ class Docker:
         
         logger.info("Enter start")
         copyContainerEnvironment()
+        self.__initOptions()
         
         reuseContainer = Boolean.parseBoolean(getVariableValue("REUSE_DOCKER_CONTAINER", "false"))
         reuseImage = Boolean.parseBoolean(getVariableValue("REUSE_DOCKER_IMAGE", "true"))
         
-        if reuseContainer and self.__containerExists():
-            self.__start()
-        elif reuseImage and self.__imageExists():
-            self.__run()
-        elif self.__dockerContext:
-            self.__build()
-            self.__run()
-        else:
-            self.__pull()
-            self.__run()
+        for index in range(len(self.__dockerContainerName)):
+            if reuseContainer and self.__containerExists(index):
+                self.__start(index)
+            elif reuseImage and self.__imageExists(index):
+                self.__run(index)
+            elif listItem(self.__dockerContext, index):
+                self.__build(index)
+                self.__run(index)
+            else:
+                self.__pull(index)
+                self.__run(index)
       
         logger.info("Exit start")
     
@@ -440,7 +540,8 @@ class Docker:
         logger.info("Enter stop")
         copyContainerEnvironment()
         
-        self.__stop()
+        for index in range(len(self.__dockerContainerName) - 1, -1, -1):
+            self.__stop(index)
         logger.info("Exit stop")
     
         
@@ -451,25 +552,27 @@ class Docker:
         try:
             copyContainerEnvironment()
             removeContainer = Boolean.parseBoolean(getVariableValue("REMOVE_DOCKER_CONTAINER", "true"))
-            if removeContainer:
-                self.__rm()
-             
             removeImage = Boolean.parseBoolean(getVariableValue("REMOVE_DOCKER_IMAGE", "false"))
-            if removeImage:
-                self.__rmi()
+            
+            for index in range(len(self.__dockerContainerName) - 1, -1, -1):
+                if removeContainer:
+                    self.__rm(index)
+            
+                if removeImage:
+                    self.__rmi(index)
         except:
             type, value, traceback = sys.exc_info()
-            logger.info("cleanup error:" + `value`)
+            logger.warning("cleanup error:" + `value`)
             
         logger.info("Exit cleanup")
                
-    def __writeInspect(self):
+    def __writeInspect(self, index):
         "write inspect output"
         
         file = None
         try:
-            file = open(self.__inspect, "w")
-            cmdList = ["docker", "inspect", self.__dockerContainerName]
+            file = open(self.__inspect[index], "w")
+            cmdList = ["docker", "inspect", self.__dockerContainerName[index]]
             if self.__sudo:
                 cmdList.insert(0, "sudo")
                 
@@ -478,13 +581,13 @@ class Docker:
             if file:
                 file.close()
                 
-    def __writeStats(self):
+    def __writeStats(self, index):
         "write stats output"
         
         file = None
         try:
-            file = open(self.__stats, "w")
-            cmdList = ["docker", "stats", "--no-stream=true", self.__dockerContainerName]
+            file = open(self.__stats[index], "w")
+            cmdList = ["docker", "stats", "--no-stream=true", self.__dockerContainerName[index]]
             if self.__sudo:
                 cmdList.insert(0, "sudo")
                 
@@ -493,43 +596,39 @@ class Docker:
             if file:
                 file.close()
 
-    def __readInspect(self):
+    def __readInspect(self, index):
         "read inspect output"
         
-        self.__running = False
+        self.__running[index] = False
         
         file = None
-        self.__inspectInfo = ""
         try:
-            path = self.__inspect
+            path = self.__inspect[index]
             if os.path.isfile(path):
-                
                 file = open(path, "r")
                 lines = file.readlines()
                 for line in lines:
-                    self.__inspectInfo = self.__inspectInfo + line
-                    
-                    if not self.__running:
-                        match = self.__runningRegex.search(line)
-                        if match:
-                            self.__running = True
+                    match = self.__runningRegex.search(line)
+                    if match:
+                        self.__running[index] = True
+                        break
         finally:
             if file:
                 file.close()
                 
-    def __readStats(self):
+    def __readStats(self, index):
         "read stats output"
         file = None
         self.__dockerStats.clear()
         
         try:
-            path = self.__stats
+            path = self.__stats[index]
             if os.path.isfile(path):
                 file = open(path, "r")
                 lines = file.readlines()
                 for line in lines:
                     row = line.replace('%','').replace('/','').split()
-                    if row and (len(row) == 15) and (row[0] == self.__dockerContainerName):
+                    if row and (len(row) == 15) and (row[0] == self.__dockerContainerName[index]):
                         self.__dockerStats["Docker CPU Usage %"] = row[1]
                         self.__dockerStats["Docker Memory Usage (MB)"] = convertToMB(row[2], row[3])
                         self.__dockerStats["Docker Memory Limit (MB)"] = convertToMB(row[4], row[5])
@@ -545,18 +644,27 @@ class Docker:
     def isRunning(self):
         copyContainerEnvironment()  
         
+        running = True
         try:
-            self.__writeInspect()
-            self.__readInspect()
-            if self.__running:
-                self.__writeStats()
-                self.__readStats()
-                self.__logs()
+            llen = len(self.__dockerContainerName)
+            for index in range(llen):
+                self.__writeInspect(index)
+                self.__readInspect(index)
+                if self.__running[index]:
+                    self.__logs(index)
+                    if index == llen - 1:
+                        self.__writeStats(index)
+                        self.__readStats(index)
+                else:
+                    running = False
+                    break
+            logger.fine("isRunning:" + `running`)
         except:
+            running = False
             type, value, traceback = sys.exc_info()
-            logger.info("isRunning error:" + `value`)
+            logger.warning("isRunning error:" + `value`)
         
-        return self.__running
+        return running
     
     def installActivationInfo(self, info):
         "install activation info"
@@ -566,7 +674,7 @@ class Docker:
             routes = routes.split()
             index = 1
             for route in routes:
-                propertyName = "HTTP_STATIC_ROUTE" + self.__dockerContainerName + str(index)
+                propertyName = "HTTP_STATIC_ROUTE" + self.__compName + str(index)
                 info.setProperty(propertyName, route)
     
     def getStat(self, statName):
@@ -583,7 +691,18 @@ def convertToMB(value, unit):
         value = value / 1000.0
         
     return value
-        
+
+def listItem(list, index, useDefault=False):
+    item = None
+    if list:
+        llen = len(list)
+        if llen > index:
+            item = list[index].strip()
+        elif useDefault and llen == 1:
+            item = list[0].strip()
+    
+    return item
+
 def list2str(list):
     content = str(list).strip('[]')
     content =content.replace(",", " ")
