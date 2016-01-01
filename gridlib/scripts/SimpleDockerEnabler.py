@@ -132,6 +132,11 @@ class Docker:
         if envVars:
             self.__envVars = envVars.split(",")
             
+        self.__envFile = None
+        envFile = getVariableValue("DOCKER_ENV_FILE")
+        if envFile:
+            self.__envFile = envFile.split(",")
+            
         self.__dnsSearch = None
         dnsSearch = getVariableValue("DNS_SEARCH_DOMAINS")
         if dnsSearch:
@@ -357,6 +362,10 @@ class Docker:
         if envs:
             cmdList = cmdList + envs.split()
             
+        envFile = listItem(self.__envFile, index)
+        if envFile:
+            cmdList = cmdList + envFile.split()
+            
         dns = listItem(self.__dnsSearch, index)
         if dns:
             cmdList = cmdList + dns.split()
@@ -383,6 +392,8 @@ class Docker:
                 options.append("--detach=true")
                 
             cmdList = cmdList + options
+        else:
+            cmdList = cmdList + ["--detach=true"]
         
         image = self.__dockerImage[index] + ":"+ self.__dockerImageTag[index]
         registry = listItem(self.__dockerRegistry, index, True)
