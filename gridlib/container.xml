@@ -146,7 +146,7 @@
 			<property name="type" value="String" />
 			<property name="description" value="Docker image repository e.g centos" />
 		</variable>
-		
+
 		<variable class="RuntimeContextVariable">
 			<property name="name" value="DOCKER_IMAGE_TAG" />
 			<property name="value" value="latest" />
@@ -181,12 +181,19 @@
 		</variable>
 
 		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_CONTAINER_HOSTNAME" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker container hostname" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
 			<property name="name" value="DOCKER_CONTAINER_WORK_DIR" />
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
 			<property name="description" value="Docker container work directory" />
-
 		</variable>
 
 		<variable class="RuntimeContextVariable">
@@ -245,17 +252,15 @@
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
-			<property name="description"
-				value="Docker String variables --env var=value" />
+			<property name="description" value="Docker String variables --env var=value" />
 		</variable>
-		
+
 		<variable class="RuntimeContextVariable">
 			<property name="name" value="DOCKER_ENV_FILE" />
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
-			<property name="description"
-				value="Docker String variables --env-file file" />
+			<property name="description" value="Docker String variables --env-file=file" />
 		</variable>
 
 		<variable class="RuntimeContextVariable">
@@ -263,9 +268,9 @@
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
-			<property name="description" value="Docker link" />
+			<property name="description" value="Docker container links, e.g --link foo" />
 		</variable>
-		
+
 		<variable class="RuntimeContextVariable">
 			<property name="name" value="DNS_SEARCH_DOMAINS" />
 			<property name="value" value="" />
@@ -305,6 +310,24 @@
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
 			<property name="description" value="Docker remove image options" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_START_INTERVAL_SECS" />
+			<property name="value" value="15" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Docker interval in secs to check if a container has started" />
+		</variable>
+
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="APP_RUNNING_PORTS" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Docker container port used to check if container app is running" />
 		</variable>
 
 		<variable class="RuntimeContextVariable">
