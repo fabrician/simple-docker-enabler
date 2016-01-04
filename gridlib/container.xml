@@ -246,6 +246,24 @@
 			<property name="description"
 				value="Docker mount volumes  --volume hostdir:containerdir" />
 		</variable>
+		
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_VOLUMES_FROM" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Docker volumes from  --volume-from foo" />
+		</variable>
+		
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_ADD_HOST" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description"
+				value="Docker add host --add-host=host:ip" />
+		</variable>
 
 		<variable class="RuntimeContextVariable">
 			<property name="name" value="DOCKER_ENV_VARIABLES" />

@@ -4,6 +4,7 @@ import sys
 import os.path
 import re
 import socket
+import uuid
 from subprocess import call
 
 from java.lang import Boolean
@@ -79,8 +80,7 @@ class Docker:
        
         for index, item in enumerate(self.__dockerImage):
             if not listItem(self.__dockerContainerName, index):
-                dcname = self.__compName  +"-"+ item + "-"+ componentInstance
-                dcname = re.sub("[\./]+", "_", dcname)
+                dcname = str(uuid.uuid4())
                 if not (index < len(self.__dockerContainerName)):
                     self.__dockerContainerName.append(dcname)
                 else:
@@ -130,10 +130,20 @@ class Docker:
         if publishPorts:
             self.__publishPorts = publishPorts.split(",")
             
+        self.__addHost = None
+        addHost = getVariableValue("DOCKER_ADD_HOST")
+        if addHost:
+            self.__addHost = addHost.split(",")
+            
         self.__mountVolumes = None
         mountVolumes = getVariableValue("DOCKER_MOUNT_VOLUMES")
         if mountVolumes:
             self.__mountVolumes = mountVolumes.split(",")
+            
+        self.__volumesFrom = None
+        volumesFrom = getVariableValue("DOCKER_VOLUMES_FROM")
+        if volumesFrom:
+            self.__volumesFrom = volumesFrom.split(",")
             
         self.__envVars = None
         envVars = getVariableValue("DOCKER_ENV_VARIABLES")
@@ -378,13 +388,21 @@ class Docker:
         if expose:
             cmdList = cmdList + expose.split()
             
-        publish = listItem(self.__publishPorts, index)
-        if publish:
-            cmdList = cmdList + publish.split()
+        publishPorts = listItem(self.__publishPorts, index)
+        if publishPorts:
+            cmdList = cmdList + publishPorts.split()
             
-        volumes = listItem(self.__mountVolumes, index)
-        if volumes:
-            cmdList = cmdList + volumes.split()
+        addHost = listItem(self.__addHost, index)
+        if addHost:
+            cmdList = cmdList + addHost.split()
+            
+        mountVolumes = listItem(self.__mountVolumes, index)
+        if mountVolumes:
+            cmdList = cmdList + mountVolumes.split()
+            
+        volumesFrom = listItem(self.__volumesFrom, index)
+        if volumesFrom:
+            cmdList = cmdList + volumesFrom.split()
             
         envs = listItem(self.__envVars, index)
         if envs:
@@ -562,7 +580,8 @@ class Docker:
         reuseContainer = Boolean.parseBoolean(getVariableValue("REUSE_DOCKER_CONTAINER", "false"))
         reuseImage = Boolean.parseBoolean(getVariableValue("REUSE_DOCKER_IMAGE", "true"))
         
-        for index in range(len(self.__dockerContainerName)):
+        llen = len(self.__dockerContainerName)
+        for index in range(llen):
             if reuseContainer and self.__containerExists(index):
                 self.__start(index)
             elif reuseImage and self.__imageExists(index):
@@ -573,11 +592,11 @@ class Docker:
             else:
                 self.__pull(index)
                 self.__run(index)
-            while True:
+            
+            while index < (llen - 1):
                 logger.info("Waiting for container to start:" + listItem(self.__dockerContainerName, index))
                 time.sleep(float(self.__startInterval))
-                self.__isContainerRunning(index)
-                if self.__running[index]:
+                if self.__isContainerRunning(index):
                     break
       
         logger.info("Exit start")
@@ -713,6 +732,8 @@ class Docker:
             type, value, traceback = sys.exc_info()
             logger.warning("isContainerRunning error:" + `value`)
             self.__running[index] = False
+            
+        return self.__running[index] 
         
     def isRunning(self):
         copyContainerEnvironment()  
@@ -721,8 +742,7 @@ class Docker:
         try:
             llen = len(self.__dockerContainerName)
             for index in range(llen):
-                self.__isContainerRunning(index)
-                if self.__running[index]:      
+                if self.__isContainerRunning(index):      
                     self.__logs(index)
                     if index == llen - 1:
                         self.__writeStats(index)
@@ -763,7 +783,7 @@ def ping(host, port):
         success = True
     except:
         type, value, traceback = sys.exc_info()
-        logger.warning("ping failed:" + `value`)
+        logger.fine("ping failed:" + `value`)
     finally:
         if s:
             s.close()
