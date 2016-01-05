@@ -98,15 +98,10 @@ If comma separated value list is specified for DOCKER_IMAGE, then all other vari
 except if an entry is also marked DEFAULT whereby a single value can apply across all image list entries.
 If an entry in multiple values list is empty it can be marked with just a comma. If a single value is specified, no comma is needed.
 
-### NOTE: 
---------------
-Values within an entry are NOT separated with commas.
+`Values within an entry are NOT separated with commas`.
 
-### EXAMPLE:
--------------------
-
-|DOCKER_IMAGE|boss, oracle, foo|
-|DOCKER_PUBLISH_PORTS|--publish ${DOCKER_HOST_IP}:8080:8080 --publish ${DOCKER_HOST_IP}:1521:1521, --publish ${DOCKER_HOST_IP}:389:389, --publish ${DOCKER_HOST_IP}:17080:17080|
+### Runtime Variable List:
+--------------------------------
 
 |Variable Name|Default Value|Type|Description|Export|Auto Increment|
 |---|---|---|---|---|---|
@@ -142,6 +137,15 @@ Values within an entry are NOT separated with commas.
 |`HTTP_STATIC_ROUTES`||String|space separated list: ContextUrl:http://${LISTEN_ADDRESS}:port|false|None|
 |`BIND_ON_ALL_LOCAL_ADDRESSES`|false|Environment|Specify if all network interfaces should be bounded for all public port access|false|None|
 |`LISTEN_ADDRESS_NET_MASK`||Environment|A comma delimited list of net masks in `CIDR` notation. The first IP address found that matches one of the net masks is used as the listen address. Note that BIND_ON_ALL_LOCAL_ADDRESSES overrides this setting.|false|None|
+
+### Example Variables:
+------------------------------
+|Variable Name|Value|
+|------|-----|
+|`DOCKER_IMAGE`|boss, oracle, foo|
+|`DOCKER_REGISTRY`|dockerregistry.example.com:5000|
+|`DOCKER_PUBLISH_PORTS`|--publish ${DOCKER_HOST_IP}:8080:8080 --publish ${DOCKER_HOST_IP}:1521:1521, --publish ${DOCKER_HOST_IP}:389:389, --publish ${DOCKER_HOST_IP}:17080:17080|
+
 
 ### Linking Docker Containers
 -----------------------------
