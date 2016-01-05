@@ -88,29 +88,52 @@ Docker Container logs are periodically retrieved and written to the file path sp
 
 ### Silver Fabric Runtime Context Variables
 ------------------------------
-Components using this enabler can configure following Enabler Runtime Context variables:
+Components using this enabler can configure following Enabler Runtime Context variables. 
+DOCKER_HOST_IP is an implicitly defined Enabler Runtime Context variable that contains the Docker Host IP Address.
+
+All Enabler Runtime Context variables below marked with the tag [CSV] under description can be specified as comma separated value list, 
+with each comma separated value applicable to corresponding image list entry.
+
+If comma separated value list is specified for DOCKER_IMAGE, then all other variables marked [CSV] must have matching number of entries, 
+except if an entry is also marked DEFAULT whereby a single value can apply across all image list entries.
+If an entry in multiple values list is empty it can be marked with just a comma. If a single value is specified, no comma is needed.
+
+### NOTE: 
+--------------
+Values within an entry are NOT separated with commas.
+
+### EXAMPLE:
+-------------------
+
+|DOCKER_IMAGE|boss, oracle, foo|
+|DOCKER_PUBLISH_PORTS|--publish ${DOCKER_HOST_IP}:8080:8080 --publish ${DOCKER_HOST_IP}:1521:1521, --publish ${DOCKER_HOST_IP}:389:389, --publish ${DOCKER_HOST_IP}:17080:17080|
 
 |Variable Name|Default Value|Type|Description|Export|Auto Increment|
 |---|---|---|---|---|---|
-|`DOCKER_CONTAINER_NAME`||String|Leave this blank (recommended), if you want unique name to be auto-generated|false|None|
-|`DOCKER_REGISTRY`||String|Docker registry for fetching image. For example, https://registryhost:5000/|false|None|
-|`DOCKER_IMAGE`||String|Docker registry for fetching image. For example, Docker image e.g centos:latests|false|None|
-|`DOCKER_CONTEXT`||String|Docker context path or URL used for building new image|false|None|
-|`DOCKER_COMMAND`||String|Docker command executed in Docker container at startup|false|None|
-|`DOCKER_COMMAND_ARGS`||String|Docker command args|false|None|
-|`DOCKER_CONTAINER_WORK_DIR`||String|Docker container work directory|false|None|
-|`DOCKER_CONTAINER_LOGS`|${CONTAINER_WORK_DIR}/docker.logs|String|Docker container logs file|false|None|
-|`DOCKER_CONTAINER_NETWORK_MODE`|--net=bridge|String|Docker container network mode|false|None|
-|`DOCKER_EXTRA_RUN_OPTIONS`|--detach=true|String|Docker run options (--detach=false option is not supported)|false|None|
-|`DOCKER_PUBLISH_PORTS`||String|Docker publish ports --publish ${LISTEN_ADDRESS}:hostPort:containerPort|false|None|
-|`DOCKER_EXPOSE_PORTS`||String|Docker expose ports --expose port|false|None|
-|`DOCKER_MOUNT_VOLUMES`||String|Docker mount volumes --volume hostdir:containerdir|false|None|
-|`DOCKER_ENV_VARIABLES`||String|Docker environment variables --env var=value|false|None|
-|`DNS_SEARCH_DOMAINS`||String|DNS search domains format: --dns-search=|false|None|
-|`DOCKER_EXTRA_BUILD_OPTIONS`|--quiet=false --no-cache=true --rm=true|String|Docker build options|false|None|
+|`DOCKER_CONTAINER_NAME`|| [CSV] String|Leave this blank (recommended), if you want unique name to be auto-generated|false|None|
+|`DOCKER_REGISTRY`||String| [CSV]  [DEFAULT] Docker registry for fetching image. For example, https://registryhost:5000/|false|None|
+|`DOCKER_IMAGE`||String| [CSV] Docker registry for fetching image. For example, Docker image e.g centos:latests|false|None|
+|`DOCKER_CONTEXT`||String| [CSV] Docker context path or URL used for building new image|false|None|
+|`DOCKER_COMMAND`||String| [CSV] Docker command executed in Docker container at startup|false|None|
+|`DOCKER_COMMAND_ARGS`||String| [CSV] Docker command args|false|None|
+|`DOCKER_CONTAINER_WORK_DIR`||String| [CSV] Docker container work directory|false|None|
+|`DOCKER_CONTAINER_LOGS`|${CONTAINER_WORK_DIR}/docker.log|String|Docker container logs file|false|None|
+|`DOCKER_CONTAINER_NETWORK_MODE`|[CSV]  [DEFAULT] --net=bridge|String|Docker container network mode|false|None|
+|`DOCKER_EXTRA_RUN_OPTIONS`|--detach=true|String|[CSV]  [DEFAULT] Docker run options (--detach=false option is not supported)|false|None|
+|`DOCKER_PUBLISH_PORTS`||String|[CSV] Docker publish ports --publish ${LISTEN_ADDRESS}:hostPort:containerPort|false|None|
+|`DOCKER_EXPOSE_PORTS`||String|[CSV] Docker expose ports --expose port|false|None|
+|`DOCKER_MOUNT_VOLUMES`||String|[CSV] Docker mount volumes --volume hostdir:containerdir|false|None|
+|`DOCKER_VOLUMES_FROM`||String|[CSV] Docker volumes from --volume-from foo|false|None|
+|`DOCKER_ADD_HOST`||String|[CSV] Docker add host --add-host=host:ip|false|None|
+|`DOCKER_ENV_VARIABLES`||String| [CSV] Docker environment variables --env var=value|false|None|
+|`DOCKER_ENV_FILE`||String| [CSV] Docker environment file  --env-file=file|false|None|
+|`DOCKER_LINK`||String| [CSV] Docker container links, e.g --link foo|false|None|
+|`DNS_SEARCH_DOMAINS`||String| [CSV] DNS search domains format: --dns-search=|false|None|
+|`DOCKER_EXTRA_BUILD_OPTIONS`|--quiet=false --no-cache=true --rm=true|[CSV]  [DEFAULT] String|Docker build options|false|None|
 |`DOCKER_STOP_OPTIONS`|--time=30|String|Docker stop options|false|None|
 |`DOCKER_REMOVE_OPTIONS`|--force=true --volumes=true|String|Docker remove container options|false|None|
 |`DOCKER_REMOVE_IMAGE_OPTIONS`|--force=true|String|Docker remove image options|false|None|
+|`APP_RUNNING_PORTS`|--force=true|String| [CSV] Docker container port used to check if container app is running|false|None|
 |`USE_SUDO`|false|String|Run Docker with sudo. The sudo must not prompt for password!|false|None|
 |`REUSE_DOCKER_IMAGE`|true|String|Reuse existing local Docker image if it exists|false|None|
 |`REUSE_DOCKER_CONTAINER`|false|String|Reuse existing local Docker container if it exists|false|None|
