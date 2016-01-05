@@ -150,9 +150,7 @@ If an entry in multiple values list is empty it can be marked with just a comma.
 ### Linking Docker Containers
 -----------------------------
 
-To link Docker Containers, one can use the native Docker linking mechanism with the understanding that all the linked containers must be restricted to run in the same docker enabled host using Silver Fabric [Resource Preference rule]. Alternatively, Silver Fabric exported Runtime Variables can be defined to export settings from one Docker Container to other Silver Fabric dependent Docker Containers.
-
-It is expected in future as Docker `Swarm` matures, this Enabler will evolve to support native linking across multiple docker enabled hosts that are part of a Swarm.
+To link Docker Containers, one can use DOCKER_LINK Runtime variable specified in the variable list.
 
 ### Component Examples
 ------------------------
