@@ -105,7 +105,7 @@ If an entry in multiple values list is empty it can be marked with just a comma.
 
 |Variable Name|Default Value|Type|Description|Export|Auto Increment|
 |---|---|---|---|---|---|
-|`DOCKER_CONTAINER_NAME`|| [CSV] String|Leave this blank (recommended), if you want unique name to be auto-generated|false|None|
+|`DOCKER_CONTAINER_NAME`|| String| [CSV] Leave this blank, if you want unique name to be auto-generated|false|None|
 |`DOCKER_REGISTRY`||String| [CSV]  [DEFAULT] Docker registry for fetching image. For example, https://registryhost:5000/|false|None|
 |`DOCKER_IMAGE`||String| [CSV] Docker registry for fetching image. For example, Docker image e.g centos:latests|false|None|
 |`DOCKER_CONTEXT`||String| [CSV] Docker context path or URL used for building new image|false|None|
@@ -124,7 +124,7 @@ If an entry in multiple values list is empty it can be marked with just a comma.
 |`DOCKER_ENV_FILE`||String| [CSV] Docker environment file  --env-file=file|false|None|
 |`DOCKER_LINK`||String| [CSV] Docker container links, e.g --link foo|false|None|
 |`DNS_SEARCH_DOMAINS`||String| [CSV] DNS search domains format: --dns-search=|false|None|
-|`DOCKER_EXTRA_BUILD_OPTIONS`|--quiet=false --no-cache=true --rm=true|[CSV]  [DEFAULT] String|Docker build options|false|None|
+|`DOCKER_EXTRA_BUILD_OPTIONS`|--quiet=false --no-cache=true --rm=true|String|[CSV]  [DEFAULT]  Docker build options|false|None|
 |`DOCKER_STOP_OPTIONS`|--time=30|String|Docker stop options|false|None|
 |`DOCKER_REMOVE_OPTIONS`|--force=true --volumes=true|String|Docker remove container options|false|None|
 |`DOCKER_REMOVE_IMAGE_OPTIONS`|--force=true|String|Docker remove image options|false|None|
