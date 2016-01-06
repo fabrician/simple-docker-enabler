@@ -111,6 +111,7 @@ If an entry in multiple values list is empty it can be marked with just a comma.
 |`DOCKER_CONTEXT`||String| [CSV] Docker context path or URL used for building new image|false|None|
 |`DOCKER_COMMAND`||String| [CSV] Docker command executed in Docker container at startup|false|None|
 |`DOCKER_COMMAND_ARGS`||String| [CSV] Docker command args|false|None|
+|`DOCKER_CONTAINER_HOSTNAME`||String| [CSV] Docker container hostname|false|None|
 |`DOCKER_CONTAINER_WORK_DIR`||String| [CSV] Docker container work directory|false|None|
 |`DOCKER_CONTAINER_LOGS`|${CONTAINER_WORK_DIR}/docker.log|String|Docker container logs file|false|None|
 |`DOCKER_CONTAINER_NETWORK_MODE`|[CSV]  [DEFAULT] --net=bridge|String|Docker container network mode|false|None|
