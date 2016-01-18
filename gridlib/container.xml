@@ -253,7 +253,7 @@
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
 			<property name="description"
-				value="Docker volumes from  --volume-from foo" />
+				value="Docker volumes from  --volumes-from foo" />
 		</variable>
 		
 		<variable class="RuntimeContextVariable">
@@ -262,7 +262,7 @@
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
 			<property name="description"
-				value="Docker add host --add-host=host:ip" />
+				value="Docker add host --add-host host:ip" />
 		</variable>
 
 		<variable class="RuntimeContextVariable">
@@ -278,7 +278,7 @@
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
-			<property name="description" value="Docker environment file --env-file=file" />
+			<property name="description" value="Docker environment file --env-file file" />
 		</variable>
 
 		<variable class="RuntimeContextVariable">
@@ -294,7 +294,7 @@
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
-			<property name="description" value="DNS search domains format: --dns-search=" />
+			<property name="description" value="DNS search domains format: --dns-search" />
 		</variable>
 
 		<variable class="RuntimeContextVariable">
@@ -452,6 +452,13 @@
 			<property name="type" value="String" />
 			<property name="description"
 				value="Allows distinct component instance numbers assignment and ensuring numbers are reused by delaying activations. When enabled, activations are skipped if a component with the same name as the one needing activation is currently deactivating or reactivating. Once all the components that were deactivating/reactivating are done any pending activations will be sent during the next allocation cycle." />
+		</variable>
+		
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="COMPONENT_NAME" />
+			<property name="value" value="${container.getCurrentDomain().getName()}" />
+			<property name="type" value="String" />
+			<property name="description" value="Silver Fabric Component name: This is always unique within a Silver Fabric Broker" />
 		</variable>
 
 	</runtimecontexttemplate>

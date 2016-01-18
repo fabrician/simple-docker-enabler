@@ -98,6 +98,10 @@ If comma separated value list is specified for DOCKER_IMAGE, then all other vari
 except if an entry is also marked DEFAULT whereby a single value can apply across all image list entries.
 If an entry in multiple values list is empty it can be marked with just a comma. If a single value is specified, no comma is needed.
 
+There is a special runtime variable, DOCKER_HOST_IP, which is automatically defined by this enabler. 
+In AWS VPC, if the AWS instance has multiple secondary IP addresses associated with the primary network interface, then
+this enabler assigns the secondary IP corresponding to the Silver Fabric engine instance number to the DOCKER_HOST_IP variable. 
+
 `Values within an entry are NOT separated with commas`.
 
 ### Runtime Variable List:

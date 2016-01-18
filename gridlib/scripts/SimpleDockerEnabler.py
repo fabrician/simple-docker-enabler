@@ -323,7 +323,7 @@ class Docker:
             self.__rm(index)
             self.__rmi(index)
         
-            cmdList = ["docker", "build", "-t", listItem(self.__dockerImage, index)]
+            cmdList = ["docker", "build", "-t", listItem(self.__dockerImage, index) + ":"+ listItem(self.__dockerImageTag, index)]
             options = listItem(self.__buildOptions, index, True)
             if options:
                 cmdList = cmdList + options.split()
