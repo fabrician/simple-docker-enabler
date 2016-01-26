@@ -6,7 +6,7 @@
 
 ### Building the Enabler
 --------------------------------------
-This Enabler project builds a `Silver Fabric Enabler Grid Library`. The Enabler Grid Library is built using the provided Ant `build.xml` file. After a successful build, the Enabler Grid Library is available under a folder named `dist` that is created automatically under the project root during the build process. 
+This enabler project builds a `Silver Fabric Enabler Grid Library`. The Enabler Grid Library can be built using Maven. The Grid Library file is created under target directory created by Maven.
 
 ### Installing the Enabler
 --------------------------------------
