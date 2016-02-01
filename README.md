@@ -10,10 +10,10 @@ This enabler project builds a `Silver Fabric Enabler Grid Library`. The Enabler 
 
 ### Installing the Enabler
 --------------------------------------
-Installation of the Silver Fabric Docker Enabler is done by copying the `Silver Fabric Enabler Grid Library` from the `dist` project folder to the `SF_HOME/webapps/livecluster/deploy/resources/gridlib` folder on the Silver Fabric Broker. 
+Installation of the `Simple Docker Enabler` is done by copying the `Simple Docker Enabler Grid Library` from the `target` project folder to the `SF_HOME/webapps/livecluster/deploy/resources/gridlib` folder on the Silver Fabric Broker. 
 
 ### Enabling Docker on the Silver Fabric Engine host
------------------------------------------------------------
+-------------------------------------------------------------------
 Each Silver Fabric Engine host needs to be `docker enabled` before it can be used to run Silver Fabric Components based on this enabler. The main steps for docker enabling a Silver Fabric Engine host are as follows:
 
 1. Install `Docker 1.9.0` or later runtime on Silver Fabric Engine host
