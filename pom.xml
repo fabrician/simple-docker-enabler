@@ -3,12 +3,13 @@
 	http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.fabrician.enabler</groupId>
-	<artifactId>simple-docker-enabler</artifactId>
-	<version>1.9.0</version>
+	<artifactId>simple-docker</artifactId>
+	<version>1.10.1</version>
 	<name>Simple Docker Enabler</name>
-	<description>Docker Enabler based on Docker CLI</description>
+	<description>Docker Enabler based on Docker CLI and Remote API</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<component.type.version>5.5.2</component.type.version>
 	</properties>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -50,7 +51,7 @@
 						<id>runtime</id>
 						<configuration>
 							<appendAssemblyId>false</appendAssemblyId>
-							<finalName>${project.artifactId}-${project.version}-gridlib</finalName>
+							<finalName>${project.artifactId}-enabler-${project.version}-gridlib</finalName>
 							<descriptors>
 								<descriptor>src/main/assembly/runtime.xml</descriptor>
 							</descriptors>

@@ -10,15 +10,15 @@
 	<import package="com.datasynapse.fabric.stats.provider" />
 	<import package="com.datasynapse.fabric.domain" />
 
-	<property name="name" value="Simple Docker Enabler" />
-	<property name="version" value="1.9.0" />
-	<property name="description" value="Docker Enabler based on Docker CLI" />
-	<property name="distributionVersion" value="1.9.0" />
-	<property name="supportedDomainType" value="Default:5.5.2" />
-	<property name="supportedDomainType" value="J2EE:5.5.2" />
+	<property name="name" value="${project.name}" />
+	<property name="version" value="${project.version}" />
+	<property name="distributionVersion" value="${project.version}" />
 	<property name="blocking" value="false" />
-	<property name="shutdownTimeout" value="120000" />
-	<property name="componentInstanceNumberingEnabled" value="True" />
+	<property name="supportedDomainType" value="Default:${component.type.version}" />
+	<property name="supportedDomainType" value="J2EE:${component.type.version}" />
+	<property name="shutdownTimeout" value="60000" />
+	<property name="description" value="${project.description}" />
+	<property name="componentInstanceNumberingEnabled" value="true" />
 
 	<script class="Script">
 		<property name="languageVersion" value="2.5" />
@@ -121,6 +121,32 @@
 
 	<runtimecontexttemplate class="DefaultRuntimeContext">
 
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_COMPOSE_FILE" />
+			<property name="value" value="" />
+			<property name="type" value="String" />
+			<property name="autoIncrementType" value="None" />
+			<property name="description"
+				value="Docker compose yml file relative path in the Component. The relative folder containing compose file must contain docker compose context files." />
+		</variable>
+		
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_COMPOSE_PROJECT" />
+			<property name="value" value="" />
+			<property name="type" value="String" />
+			<property name="autoIncrementType" value="None" />
+			<property name="description"
+				value="Docker compose project name. Defaults to component name." />
+		</variable>
+		
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_COMPOSE_PATH" />
+			<property name="value" value="/usr/local/bin/docker-compose" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker compose executable path" />
+		</variable>
+		
 		<variable class="RuntimeContextVariable">
 			<property name="name" value="DOCKER_CONTAINER_NAME" />
 			<property name="value" value="" />
@@ -246,23 +272,21 @@
 			<property name="description"
 				value="Docker mount volumes  --volume hostdir:containerdir" />
 		</variable>
-		
+
 		<variable class="RuntimeContextVariable">
 			<property name="name" value="DOCKER_VOLUMES_FROM" />
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
-			<property name="description"
-				value="Docker volumes from  --volumes-from foo" />
+			<property name="description" value="Docker volumes from  --volumes-from foo" />
 		</variable>
-		
+
 		<variable class="RuntimeContextVariable">
 			<property name="name" value="DOCKER_ADD_HOST" />
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
-			<property name="description"
-				value="Docker add host --add-host host:ip" />
+			<property name="description" value="Docker add host --add-host host:ip" />
 		</variable>
 
 		<variable class="RuntimeContextVariable">
@@ -270,7 +294,8 @@
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
-			<property name="description" value="Docker environment variables --env var=value" />
+			<property name="description"
+				value="Docker environment variables --env var=value" />
 		</variable>
 
 		<variable class="RuntimeContextVariable">
@@ -294,7 +319,15 @@
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
 			<property name="type" value="String" />
-			<property name="description" value="DNS search domains format: --dns-search" />
+			<property name="description" value="DNS search domains format: e.g. --dns-search domain" />
+		</variable>
+		
+		<variable class="RuntimeContextVariable">
+			<property name="name" value="DNS_SERVERS" />
+			<property name="value" value="" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Custom DNS server e.g. --dns server" />
 		</variable>
 
 		<variable class="RuntimeContextVariable">
@@ -389,6 +422,14 @@
 		</variable>
 
 		<variable class="RuntimeContextVariable">
+			<property name="name" value="DOCKER_PORT" />
+			<property name="value" value="2375" />
+			<property name="autoIncrementType" value="None" />
+			<property name="type" value="String" />
+			<property name="description" value="Docker daemon TCP port" />
+		</variable>
+		
+		<variable class="RuntimeContextVariable">
 			<property name="name" value="HTTP_STATIC_ROUTES" />
 			<property name="value" value="" />
 			<property name="autoIncrementType" value="None" />
@@ -453,12 +494,13 @@
 			<property name="description"
 				value="Allows distinct component instance numbers assignment and ensuring numbers are reused by delaying activations. When enabled, activations are skipped if a component with the same name as the one needing activation is currently deactivating or reactivating. Once all the components that were deactivating/reactivating are done any pending activations will be sent during the next allocation cycle." />
 		</variable>
-		
+
 		<variable class="RuntimeContextVariable">
 			<property name="name" value="COMPONENT_NAME" />
 			<property name="value" value="${container.getCurrentDomain().getName()}" />
 			<property name="type" value="String" />
-			<property name="description" value="Silver Fabric Component name: This is always unique within a Silver Fabric Broker" />
+			<property name="description"
+				value="Silver Fabric Component name: This is always unique within a Silver Fabric Broker" />
 		</variable>
 
 	</runtimecontexttemplate>

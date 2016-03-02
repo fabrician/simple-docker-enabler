@@ -2,19 +2,29 @@
 
 ### Introduction
 --------------------------------------
-`Simple Docker Enabler` is used with `TIBCO Silver Fabric` to manage Docker Containers. This Silver Fabric Enabler uses Docker CLI and TIBCO Silver Fabric Jython Scripting API. Although this Enabler was developed using Docker version 1.9.0 and Silver Fabric Scripting API version 5.7.1, it is expected to  work  with other earlier or later compatible versions of Docker CLI and Silver Fabric Scripting API.
+`Simple Docker Enabler` is used in conjunction with `TIBCO Silver Fabric` to manage a related set of Docker containers. 
+
+This Silver Fabric Enabler uses Docker CLI, Docker Remote API
+and TIBCO Silver Fabric Jython Scripting API. This Enabler was developed using Docker version 1.9.0
+and Silver Fabric Scripting API version 5.7.1. However, it is expected to  work  with other earlier or later compatible versions of Docker CLI, Remote API
+ and Silver Fabric.  It has been tested with Docker version 1.10.1. 
+
+This Enabler is compatible with  `Docker Compose` and `Docker Swarm`.
 
 ### Building the Enabler
 --------------------------------------
-This enabler project builds a `Silver Fabric Enabler Grid Library`. The Enabler Grid Library can be built using Maven. The Grid Library file is created under target directory created by Maven.
+This Enabler project builds a `Silver Fabric Enabler Grid Library`. The Enabler Grid Library can be built using Maven. 
+The Grid Library file is created under target directory created by Maven.
 
 ### Installing the Enabler
 --------------------------------------
-Installation of the `Simple Docker Enabler` is done by copying the `Simple Docker Enabler Grid Library` from the `target` project folder to the `SF_HOME/webapps/livecluster/deploy/resources/gridlib` folder on the Silver Fabric Broker. 
+Installation of the `Simple Docker Enabler` is done by copying the `Simple Docker Enabler Grid Library` from the `target` 
+project folder to the `SF_HOME/webapps/livecluster/deploy/resources/gridlib` folder on the Silver Fabric Broker. 
 
 ### Enabling Docker on the Silver Fabric Engine host
 -------------------------------------------------------------------
-Each Silver Fabric Engine host needs to be `docker enabled` before it can be used to run Silver Fabric Components based on this enabler. The main steps for docker enabling a Silver Fabric Engine host are as follows:
+ Silver Fabric Engine host needs to be `Docker enabled` before it can run Silver Fabric Components that use this Enabler. 
+The main steps for Docker enabling a Silver Fabric Engine host are as follows:
 
 1. Install `Docker 1.9.0` or later runtime on Silver Fabric Engine host
     * See [Install Docker] for details
@@ -34,28 +44,27 @@ After you have completed the steps noted above, restart Silver Fabric Engine Dae
 
 ### Docker Container Feature Support
 ---------------------------------------------------
-Docker containers provide two key capabilities:
-* Operating System level isolation above the kernel layer
-* Application level packaging
 
-This Docker Enabler supports both these key Docker capabilities and it does not impose any significant restrictions on native Docker Container features. The only restriction this Enabler imposes is that the Docker Containers managed by this Enabler are always run in `detached` mode.
+This Docker Enabler does not restrict any native Docker container  features, except that the Docker containers must be run in detached mode.
 
-### Docker Container Instantiation Limits
-------------------------------------------
-Each Silver Fabric Engine docker enabled host can run Docker containers up to the number of Silver Fabric Engine instances available on the host. Running multiple Docker Containers on a single docker enabled host will eventually bump into CPU and memory limits on the host. The number of Silver Fabric Engine instances configured on a docker enabled host should reflect the CPU and memory resources available on the docker enabled host.
 
 ### Configuring Silver Fabric Engine Resource Preference
----------------------------------------------------------
+-------------------------------------------------------------------------
 
-Since not all Silver Fabric Engine hosts managed by a single Silver Fabric Broker may be docker enabled, a [Resource Preference rule] using `Docker Enabled` engine property must be configured in any Silver Fabric Component using this Enabler. This enables Silver Fabric Broker to allocate Components that are based on this Enabler exclusively to docker enabled hosts. Failure to use the suggested [Resource Preference rule] may result in the Components to be allocated to hosts that are not docker enabled, resulting in Silver Fabric Component activation failure. In addition, you may optionally use the `Docker VersionInfo` engine property to select docker enabled hosts with a specific Docker version.
+Since not all Silver Fabric Engine hosts managed by a single Silver Fabric Broker may be Docker enabled, a [Resource Preference rule] using `Docker Enabled` engine property must be configured in any Silver Fabric Component using this Enabler. This enables Silver Fabric Broker to allocate Components that are based on this Enabler exclusively to Docker enabled hosts. Failure to use the suggested [Resource Preference rule] may result in the Components to be allocated to hosts that are not Docker enabled, resulting in Silver Fabric Component activation failure. In addition, you may optionally use the `Docker VersionInfo` engine property to select Docker enabled hosts with a specific Docker version.
 
 ### Pulling Docker Images from a Docker Registry
 -------------------------------------------------
-Silver Fabric Components using this Enabler must define `DOCKER_IMAGE` runtime context variable. If the value of the `DOCKER_IMAGE` variable points to a Docker `repository:tag` image, the relevant image is pulled down to the docker enabled host. This assumes there is appropriate network and security configuration in place on the docker enabled host such that the image can be pulled down from the specified Docker registry given by the value of the runtime variable `DOCKER_REGISTRY`. If no Docker registry is specified, default Docker Hub registry is used by the Enabler.
-
+ If the value of the `DOCKER_IMAGE` variable points to a Docker `repository:tag` image, the relevant image is pulled down to the Docker enabled host. 
+ This assumes there is appropriate network and security configuration in place on the Docker enabled 
+ host such that the image can be pulled down from the specified Docker registry given by the value of the runtime context variable `DOCKER_REGISTRY`. 
+ If no Docker registry is specified, default Docker Hub registry is used by the Enabler. 
+ 
 ### Building Docker Images
 ------------------------------
-If the specified `DOCKER_IMAGE` runtime context variable points to an image that does not exist in the specified Docker registry, and if `DOCKER_CONTEXT` variable points to a folder containing a `Dockerfile` and other optional docker context files, a new Docker image is built locally on the docker enabled host and is tagged with the value specified in the `DOCKER_IMAGE` variable.
+If the specified `DOCKER_IMAGE` runtime context variable points to an image that does not exist in the specified Docker registry, 
+and if `DOCKER_CONTEXT` variable points to a folder containing a `Dockerfile` and other optional Docker context files, 
+a new Docker image is built locally on the Docker enabled host and is tagged with the value specified in the `DOCKER_IMAGE` variable.
 
 ### Silver Fabric Enabler Features
 ----------------------------------
@@ -66,8 +75,13 @@ This Enabler supports following Silver Fabric Enabler features:
 * Component Notification Support
 * Archive Management Support
 
+The Enabler currently does not implement any of the methods required for archive management. It is assumed that the application archives are managed 
+directly through appropriate in the image or are managed by using a Dockerfile.
+
+If needed, archive management can be implemented using Component Scripting methods inside a Component Jython script.
+
 ### Silver Fabric Enabler Statistics
--------------------------------------
+-------------------------------------------
 
 Components using this Enabler can track following Docker container statistics:
 
@@ -82,33 +96,49 @@ Components using this Enabler can track following Docker container statistics:
 |`Docker Block Output (MB)`|Docker block device output (MB)|
 |`Docker Block Input (MB)`|Docker block device input (MB)|
 
+If a Component using this Enabler specifies multiple Docker containers, the Enabler statistics contain a sum of the statistics from all the managed Docker containers.
+
 ### Docker Container Logs
 -----------------------------
-Docker Container logs are periodically retrieved and written to the file path specified by the Runtime Context variable `DOCKER_CONTAINER_LOGS`. 
+Docker container logs are periodically retrieved and written to the file path specified by the Runtime Context variable `DOCKER_CONTAINER_LOGS`. 
 
 ### Silver Fabric Runtime Context Variables
-------------------------------
-Components using this enabler can configure following Enabler Runtime Context variables. 
-DOCKER_HOST_IP is an implicitly defined Enabler Runtime Context variable that contains the Docker Host IP Address.
+--------------------------------------------------------
+This Enabler supports two mutually exclusive approaches for specifying the Docker container set managed by the Component using this Enabler:
+
+* Docker containers may be specified in a `Docker Compose` file included within the Component.
+  Under this approach, the variable DOCKER_COMPOSE_FILE must be specified, and  other
+ DOCKER_COMPOSE variables may be used to specify appropriate values.
+
+* Alternatively, the Docker container set maybe specified using Enabler runtime context variables without the  DOCKER_COMPOSE prefix. 
+Under this approach, DOCKER_IMAGE must be specified.
+
+ If both approaches are specified, Docker Compose approach takes precedence. The relative folder containing Docker compose file within the Component 
+must contain all the Docker compose context files. 
+
+Components using this Enabler may need to configure one or more of following Enabler runtime context variables.
 
 All Enabler Runtime Context variables below marked with the tag [CSV] under description can be specified as comma separated value list, 
 with each comma separated value applicable to corresponding image list entry.
 
 If comma separated value list is specified for DOCKER_IMAGE, then all other variables marked [CSV] must have matching number of entries, 
 except if an entry is also marked DEFAULT whereby a single value can apply across all image list entries.
-If an entry in multiple values list is empty it can be marked with just a comma. If a single value is specified, no comma is needed.
+If an entry in the values list is empty it can be marked with just a comma. If a single value is specified, no comma is needed at the end of the value.
 
-There is a special runtime variable, DOCKER_HOST_IP, which is automatically defined by this enabler. 
-In AWS VPC, if the AWS instance has multiple secondary IP addresses associated with the primary network interface, then
-this enabler assigns the secondary IP corresponding to the Silver Fabric engine instance number to the DOCKER_HOST_IP variable. 
+There is a special implicitly runtime context variable named DOCKER_HOST_IP.
+If the host has multiple secondary IP addresses associated with the primary network interface, then
+this Enabler assigns the secondary IP corresponding to the Silver Fabric engine instance number to the DOCKER_HOST_IP variable. 
 
-`Values within an entry are NOT separated with commas`.
+Multiple values in a CSV list entry corresponding to a single image must be separated with SPACES, NOT commas.
 
 ### Runtime Variable List:
 --------------------------------
 
 |Variable Name|Default Value|Type|Description|Export|Auto Increment|
 |---|---|---|---|---|---|
+|`DOCKER_COMPOSE_FILE`|| String| Docker compose (docker-compose.yml) file relative path in the Component. |false|None|
+|`DOCKER_COMPOSE_PROJECT`|| String| Docker compose project name. Defaults to component name. |false|None|
+|`DOCKER_COMPOSE_PATH`|/usr/local/bin/docker-compose| String| Docker compose executable path |false|None|
 |`DOCKER_CONTAINER_NAME`|| String| [CSV] Leave this blank, if you want unique name to be auto-generated|false|None|
 |`DOCKER_REGISTRY`||String| [CSV]  [DEFAULT] Docker registry for fetching image. For example, https://registryhost:5000/|false|None|
 |`DOCKER_IMAGE`||String| [CSV] Docker registry for fetching image. For example, Docker image e.g centos:latests|false|None|
@@ -129,6 +159,7 @@ this enabler assigns the secondary IP corresponding to the Silver Fabric engine 
 |`DOCKER_ENV_FILE`||String| [CSV] Docker environment file  --env-file=file|false|None|
 |`DOCKER_LINK`||String| [CSV] Docker container links, e.g --link foo|false|None|
 |`DNS_SEARCH_DOMAINS`||String| [CSV] DNS search domains format: --dns-search=|false|None|
+|`DNS_SERVERS`||String| [CSV] Custom DNS server e.g. --dns server|false|None|
 |`DOCKER_EXTRA_BUILD_OPTIONS`|--quiet=false --no-cache=true --rm=true|String|[CSV]  [DEFAULT]  Docker build options|false|None|
 |`DOCKER_STOP_OPTIONS`|--time=30|String|Docker stop options|false|None|
 |`DOCKER_REMOVE_OPTIONS`|--force=true --volumes=true|String|Docker remove container options|false|None|
@@ -139,6 +170,7 @@ this enabler assigns the secondary IP corresponding to the Silver Fabric engine 
 |`REUSE_DOCKER_CONTAINER`|false|String|Reuse existing local Docker container if it exists|false|None|
 |`REMOVE_DOCKER_CONTAINER`|true|String|Remove Docker container on component shutdown|false|None|
 |`REMOVE_DOCKER_IMAGE`|false|String|Remove Docker image on component shutdown|false|None|
+|`DOCKER_PORT`|2375|String|Docker daemon port on local host|false|None|
 |`HTTP_STATIC_ROUTES`||String|space separated list: ContextUrl:http://${LISTEN_ADDRESS}:port|false|None|
 |`BIND_ON_ALL_LOCAL_ADDRESSES`|false|Environment|Specify if all network interfaces should be bounded for all public port access|false|None|
 |`LISTEN_ADDRESS_NET_MASK`||Environment|A comma delimited list of net masks in `CIDR` notation. The first IP address found that matches one of the net masks is used as the listen address. Note that BIND_ON_ALL_LOCAL_ADDRESSES overrides this setting.|false|None|
@@ -152,15 +184,18 @@ this enabler assigns the secondary IP corresponding to the Silver Fabric engine 
 |`DOCKER_PUBLISH_PORTS`|--publish ${DOCKER_HOST_IP}:8080:8080 --publish ${DOCKER_HOST_IP}:1521:1521, --publish ${DOCKER_HOST_IP}:389:389, --publish ${DOCKER_HOST_IP}:17080:17080|
 
 
-### Linking Docker Containers
------------------------------
+### Native Linking of Docker Containers
+---------------------------------------------------
 
-To link Docker Containers, one can use DOCKER_LINK Runtime variable specified in the variable list.
+To link Docker containers through Docker native Link capability, use DOCKER_LINK Runtime variable specified in the variable list.
 
 ### Component Examples
 ------------------------
-Below are screenshot images from example Silver Fabric Component configurations using this Enabler. Note the use of custom Runtime Context variables used to define and export (export is set to true) Docker Container configuration from one Docker Container to another Docker Container using Silver Fabric Runtime Context variables export mechanism.
+Below are screenshot images from example Silver Fabric Component configurations using this Enabler. 
+Note the use of custom Silver Fabric Runtime Context variables used to define and export (export is set to true) 
+Docker container configuration from one Docker container to another Docker container using Silver Fabric Runtime Context variables export mechanism.
 
+* [Docker Compose](images/docker-compose-example.png)
 * [MySQL Docker](images/mysql-docker.png)
 * [Postgres Docker](images/postgres-docker.png)
 * [Mongodb Docker](images/mongodb-docker.png)

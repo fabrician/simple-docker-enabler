@@ -4,7 +4,7 @@
 	<baseDirectory>
 	</baseDirectory>
 	<formats>
-		<format>zip</format>
+		<format>tar.gz</format>
 	</formats>
 
 	<fileSets>
@@ -12,9 +12,26 @@
 			<directory>src/main/resources/runtime</directory>
 			<outputDirectory />
 			<includes>
-				<include>**/*</include>
+				<include>configure.xml</include>
 			</includes>
 		</fileSet>
 
+		<fileSet>
+			<directory>src/main/resources/runtime</directory>
+			<outputDirectory />
+			<filtered>true</filtered>
+			<includes>
+				<include>container.xml</include>
+				<include>grid-library.xml</include>
+			</includes>
+		</fileSet>
+
+		<fileSet>
+			<directory>src/main/resources/runtime/scripts</directory>
+			<outputDirectory>scripts</outputDirectory>
+			<includes>
+				<include>*.py</include>
+			</includes>
+		</fileSet>
 	</fileSets>
 </assembly>
