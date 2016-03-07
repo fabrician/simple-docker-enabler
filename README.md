@@ -40,7 +40,7 @@ The main steps for Docker enabling a Silver Fabric Engine host are as follows:
     * Configure Docker dameon selinux-enabled appropriately. During the development and testing of this Enabler, `--selinux-enabled=false` options was used. 
     * See [Docker and SELinux] for additional information
    
-After you have completed the steps noted above, restart Silver Fabric Engine Daemon so that it will register the host with Silver Fabric Broker as `Docker Enabled`. It is recommneded that you setup and enable systemd services for Silver Fabric Engine Daemon and Docker Daemon so both these servcies automatially startup when the host operating system is booted up.
+After you have completed the steps noted above, restart Silver Fabric Engine Daemon so that it will register the host with Silver Fabric Broker as `Docker Enabled`. It is recommended that you setup and enable `systemd` services for Silver Fabric Engine Daemon and Docker Daemon so both these services automatically startup when the host operating system is booted up.
 
 ### Docker Container Feature Support
 ---------------------------------------------------
