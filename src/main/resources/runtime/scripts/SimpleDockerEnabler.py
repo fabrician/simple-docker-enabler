@@ -357,9 +357,11 @@ class Docker:
             if options:
                 cmdList = cmdList + options.split()
         
-            if not str(self.__dockerContext).startswith("/"):
-                self.__dockerContext = os.path.join(self.__basedir, self.__dockerContext)
-            cmdList.append(self.__dockerContext[index])
+            dockerContext = listItem(self.__dockerContext, index)
+            
+            if not dockerContext.startswith("/"):
+                dockerContext = os.path.join(self.__basedir, dockerContext)
+            cmdList.append(dockerContext)
     
             if self.__sudo:
                 cmdList.insert(0, "sudo")

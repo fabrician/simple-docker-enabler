@@ -40,7 +40,29 @@ The main steps for Docker enabling a Silver Fabric Engine host are as follows:
     * Configure Docker dameon selinux-enabled appropriately. During the development and testing of this Enabler, `--selinux-enabled=false` options was used. 
     * See [Docker and SELinux] for additional information
    
-After you have completed the steps noted above, restart Silver Fabric Engine Daemon so that it will register the host with Silver Fabric Broker as `Docker Enabled`. It is recommneded that you setup and enable systemd services for Silver Fabric Engine Daemon and Docker Daemon so both these servcies automatially startup when the host operating system is booted up.
+After you have completed the steps noted above, restart Silver Fabric Engine Daemon so that it will register the host with Silver Fabric Broker as `Docker Enabled`. It is recommended that you setup and enable `systemd` services for Silver Fabric Engine Daemon and Docker Daemon so both these services automatically startup when the host operating system is booted up.
+
+### Configuring Main Docker Daemon on the Silver Fabric Engine host
+------------------------------------------------------------------------------------------
+
+Create a file [`/etc/sysconfig/docker`](scripts/docker) and specify Docker OPTIONS in this file.
+
+Note the name of the default bridge in the Docker OPTIONS is set to `sfdocker0` and not `docker0`. The reason for this is that the default `docker0` name interferes
+with Silver Fabric Engine Daemon startup, which, by default, is configured to use the first network interface available in the alphabetical order. 
+To avoid this interference, one solution is to create a network bridge named `sfdocker0` using following commands (tested
+on Centos 7):
+
+* sudo brctl addbr sfdocker0
+* sudo ip addr add 172.17.0.1/16  dev sfdocker0
+* sudo ip link set dev sfdocker0 up
+
+To make this bridge persistent on reboot, create a file named [`/etc/sysconfig/network-scripts/ifcfg-sfdocker0`] (scripts/ifcfg-sfdocker0)
+
+In [`/usr/lib/systemd/system/docker.service`](scripts/docker.service)  file add  `/etc/sysconfig/docker` as the `EnviornmentFile`.
+Enable Main Docker daemon service using the command shown below:
+
+* sudo systemctl enable docker.service
+
 
 ### Docker Container Feature Support
 ---------------------------------------------------
