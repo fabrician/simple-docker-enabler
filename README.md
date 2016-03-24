@@ -56,7 +56,7 @@ on Centos 7):
 * sudo ip addr add 172.17.0.1/16  dev sfdocker0
 * sudo ip link set dev sfdocker0 up
 
-To make this bridge persistent on reboot, create a file named [`/etc//sysconfig/network-scripts/ifcfg-sfdocker0`] (scripts/ifcfg-sfdocker0)
+To make this bridge persistent on reboot, create a file named [`/etc/sysconfig/network-scripts/ifcfg-sfdocker0`] (scripts/ifcfg-sfdocker0)
 
 In [`/usr/lib/systemd/system/docker.service`](scripts/docker.service)  file add  `/etc/sysconfig/docker` as the `EnviornmentFile`.
 Enable Main Docker daemon service using the command shown below:
